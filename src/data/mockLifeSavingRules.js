@@ -1,0 +1,242 @@
+export const mockLifeSavingRules = [
+  {
+    id: 'LSR-01',
+    name: 'Energy Isolation',
+    category: 'Energy Isolation',
+    shortDescription: 'Verify isolation and zero energy state before work begins.',
+    fullDescription: 'Isolate all electrical, pressurized hydraulic, thermal, and chemical energy sources. Perform Lockout/Tagout (LOTO), depressurize lines, bleed residual trapped forces, and execute zero-energy verification before breaking containment.',
+    iconName: 'ZapOff',
+    color: '#D97706', // amber
+    bgColor: '#FEF3C7',
+    riskLevel: 'CRITICAL',
+    totalReports: 624,
+    sifReports: 218,
+    sifPercentage: 34.9,
+    trend: '+12.4%',
+    trendDirection: 'up', // up is bad for risk
+    topActivity: 'Manifold & Valve Maintenance',
+    topFacility: 'Duliajan Central Hub',
+    keyRequirements: [
+      'Identify all energy sources and isolation points',
+      'Apply personal lockout/tagout devices',
+      'Vent, drain, and test for zero energy before breaking lines',
+      'Obtain certified PTW and isolation certificate'
+    ]
+  },
+  {
+    id: 'LSR-02',
+    name: 'Confined Space Entry',
+    category: 'Confined Space',
+    shortDescription: 'Obtain authorization and test atmosphere before entering.',
+    fullDescription: 'Never enter a vessel, storage tank, cellar pit, or enclosed excavation without valid confined space permit, verified mechanical isolation, multi-gas continuous testing, calibrated ventilation, and stationed standby watchman.',
+    iconName: 'Box',
+    color: '#DC2626', // crimson
+    bgColor: '#FEE2E2',
+    riskLevel: 'CRITICAL',
+    totalReports: 412,
+    sifReports: 168,
+    sifPercentage: 40.8,
+    trend: '+6.1%',
+    trendDirection: 'up',
+    topActivity: 'Separator Vessel Desanding & Tank Inspection',
+    topFacility: 'Moran Oil Field',
+    keyRequirements: [
+      'Confirm physical isolation and purging of toxic/flammable hydrocarbons',
+      'Test oxygen (19.5%–23.5%), LEL (<1%), H2S (<5 ppm)',
+      'Maintain an alert Standby Attendant at the hatch at all times',
+      'Equip entrant with certified rescue harness and gas detector'
+    ]
+  },
+  {
+    id: 'LSR-03',
+    name: 'Line of Fire',
+    category: 'Line of Fire',
+    shortDescription: 'Position yourself and others away from moving or released energy paths.',
+    fullDescription: 'Stay clear of pressurized release paths, suspended crane loads, heavy rotating drill floor equipment, tensioned cables, and blind spots around mobile plant machinery.',
+    iconName: 'Target',
+    color: '#EA580C', // orange
+    bgColor: '#FFEDD5',
+    riskLevel: 'CRITICAL',
+    totalReports: 785,
+    sifReports: 242,
+    sifPercentage: 30.8,
+    trend: '+15.8%',
+    trendDirection: 'up',
+    topActivity: 'High-Pressure Pipe Bleeding & Tubular Tripping',
+    topFacility: 'Digboi Field & Production Complex',
+    keyRequirements: [
+      'Never stand under or in swing radius of a suspended load',
+      'Ensure whip checks / safety clamps are fitted to high-pressure hoses',
+      'Establish physical red exclusion barricades around pressure bleed vents',
+      'Maintain continuous eye contact or radio contact with machinery operators'
+    ]
+  },
+  {
+    id: 'LSR-04',
+    name: 'Hot Work',
+    category: 'Hot Work',
+    shortDescription: 'Control flammables and ignition sources in hazardous areas.',
+    fullDescription: 'Do not perform welding, cutting, grinding, or open-flame work in classified Zone 0/1/2 hydrocarbon processing zones without continuous gas monitoring, spark containment habitat, firefighting standby, and verified permit to work.',
+    iconName: 'Flame',
+    color: '#D97706',
+    bgColor: '#FEF3C7',
+    riskLevel: 'HIGH',
+    totalReports: 512,
+    sifReports: 145,
+    sifPercentage: 28.3,
+    trend: '-3.2%',
+    trendDirection: 'down',
+    topActivity: 'Flare Line & Pipeline Flange Welding',
+    topFacility: 'Makum Gas Gathering Station',
+    keyRequirements: [
+      'Eliminate flammable atmosphere and combustible materials within 15m radius',
+      'Perform continuous LEL monitoring throughout hot work operation',
+      'Deploy pressurized welding habitat when working near live lines',
+      'Station designated fire watch with pressurized foam extinguisher'
+    ]
+  },
+  {
+    id: 'LSR-05',
+    name: 'Working at Height',
+    category: 'Working at Height',
+    shortDescription: 'Protect yourself against falls when working at elevated locations.',
+    fullDescription: 'Wear a certified full-body harness with 100% tie-off to engineered anchor points whenever working at heights of 1.8m or greater, on derrick masts, scaffold platforms, or storage tank roofs.',
+    iconName: 'ArrowUpCircle',
+    color: '#0284C7',
+    bgColor: '#E0F2FE',
+    riskLevel: 'HIGH',
+    totalReports: 498,
+    sifReports: 124,
+    sifPercentage: 24.9,
+    trend: '-1.4%',
+    trendDirection: 'down',
+    topActivity: 'Derrick Monkey Board Ops & Tank Gauging',
+    topFacility: 'Kumchai Oil Field',
+    keyRequirements: [
+      'Inspect green scaffold inspection tag before climbing',
+      'Ensure 100% tie-off using dual shock-absorbing lanyards',
+      'Install kickboards and safety netting to prevent dropped tools',
+      'Never climb on guardrails, pipe racks, or uncertified grating'
+    ]
+  },
+  {
+    id: 'LSR-06',
+    name: 'Safe Mechanical Lifting',
+    category: 'Lifting Operations',
+    shortDescription: 'Plan lifting operations and control the lift zone.',
+    fullDescription: 'Never exceed crane safe working load (SWL). Use inspected rigging slings, verify ground bearing capacity, rig tagline control, and barricade the entire lift radius.',
+    iconName: 'Anchor',
+    color: '#7C3AED',
+    bgColor: '#EDE9FE',
+    riskLevel: 'HIGH',
+    totalReports: 430,
+    sifReports: 118,
+    sifPercentage: 27.4,
+    trend: '+8.7%',
+    trendDirection: 'up',
+    topActivity: 'Drill Collar Hoisting & Heavy Compressor Skids',
+    topFacility: 'Naharkatiya Deep Drilling Hub',
+    keyRequirements: [
+      'Review crane lift plan and verified rigger competency',
+      'Inspect wire rope, web slings, and shackles for color code & defects',
+      'Use tag lines to guide loads; keep hands off moving cargo',
+      'Enforce full exclusion zone barricading under crane boom path'
+    ]
+  },
+  {
+    id: 'LSR-07',
+    name: 'Driving & Journey Management',
+    category: 'Driving / Journey Management',
+    shortDescription: 'Wear seatbelts, adhere to speed limits, and manage route hazards.',
+    fullDescription: 'Follow authorized journey management plans across remote Assam oilfields and desert terrain. Enforce IVMS monitoring, 0% mobile phone usage, valid defensive driving certifications, and mandatory rest periods.',
+    iconName: 'Truck',
+    color: '#059669',
+    bgColor: '#D1FAE5',
+    riskLevel: 'MEDIUM',
+    totalReports: 360,
+    sifReports: 58,
+    sifPercentage: 16.1,
+    trend: '-5.8%',
+    trendDirection: 'down',
+    topActivity: 'Pipeline Right-of-Way Patrol & Crew Transport',
+    topFacility: 'Jorhat Pipeline Operations Base',
+    keyRequirements: [
+      'Fasten seatbelts for all vehicle occupants at all times',
+      'Adhere strictly to field speed limits (20 km/h in plants, 40 km/h on ROW roads)',
+      'Conduct pre-trip 360-degree vehicle inspection checklist',
+      'No driving during heavy monsoon river crossing without convoy clearance'
+    ]
+  },
+  {
+    id: 'LSR-08',
+    name: 'Bypassing Safety Controls',
+    category: 'Bypass Safety Controls',
+    shortDescription: 'Obtain authorization before overriding or disabling safety devices.',
+    fullDescription: 'Never bypass, bridge, or defeat Emergency Shutdown Valves (ESDVs), fire & gas sensors, Pressure Safety Valves (PSVs), or interlocks without formal management of change (MOC) and approved override permit.',
+    iconName: 'ShieldAlert',
+    color: '#B91C1C',
+    bgColor: '#FEE2E2',
+    riskLevel: 'CRITICAL',
+    totalReports: 284,
+    sifReports: 102,
+    sifPercentage: 35.9,
+    trend: '+14.2%',
+    trendDirection: 'up',
+    topActivity: 'Booster Compressor Startup & ESD Inhibit',
+    topFacility: 'Barekuri Gas Gathering Station',
+    keyRequirements: [
+      'Log and obtain GM-level signature before applying physical/software jumper',
+      'Implement compensating safety measures during bypass duration',
+      'Continuously log bypassed instruments in Central Control Room board',
+      'Reinstate safety interlock immediately following maintenance test'
+    ]
+  },
+  {
+    id: 'LSR-09',
+    name: 'Toxic Gas / H2S Protection',
+    category: 'Toxic Gas / H2S',
+    shortDescription: 'Monitor atmosphere and carry self-contained breathing apparatus in H2S zones.',
+    fullDescription: 'Verify personal gas detectors are calibrated and activated in all sour crude and sour gas designated facilities. Observe wind sock direction and verify SCBA escape pack readiness.',
+    iconName: 'AlertTriangle',
+    color: '#DC2626',
+    bgColor: '#FEE2E2',
+    riskLevel: 'CRITICAL',
+    totalReports: 310,
+    sifReports: 96,
+    sifPercentage: 31.0,
+    trend: '+4.5%',
+    trendDirection: 'up',
+    topActivity: 'Sour Crude Well Testing & Sampling',
+    topFacility: 'Moran Oil Field',
+    keyRequirements: [
+      'Wear active personal 4-gas monitor (H2S, LEL, CO, O2)',
+      'Carry 15-minute emergency escape breathing apparatus (EEBA)',
+      'Approach sour wellheads strictly upwind or crosswind',
+      'Halt all operations immediately upon 10 ppm H2S audible alarm'
+    ]
+  },
+  {
+    id: 'LSR-10',
+    name: 'System & Asset Integrity',
+    category: 'Process Safety',
+    shortDescription: 'Maintain mechanical integrity of containment barriers and pressurized assets.',
+    fullDescription: 'Ensure pressurized vessels, pipelines, wellheads, and relief systems undergo certified non-destructive testing (NDT), wall thickness gauging, corrosion coupon monitoring, and flange torque validation.',
+    iconName: 'Activity',
+    color: '#0891B2',
+    bgColor: '#CFFAFE',
+    riskLevel: 'HIGH',
+    totalReports: 365,
+    sifReports: 95,
+    sifPercentage: 26.0,
+    trend: '+2.1%',
+    trendDirection: 'up',
+    topActivity: 'Trunk Pipeline Wall Thickness Gauging & Hydrotesting',
+    topFacility: 'Jorhat Pipeline Operations Base',
+    keyRequirements: [
+      'Perform scheduled ultrasonic thickness testing on erosion-prone elbows',
+      'Verify PSV calibration and re-certification within valid inspection window',
+      'Ensure proper bolt torque sequencing on all high-pressure flanges',
+      'Log and investigate any localized weeping, pinhole seepage, or vibration'
+    ]
+  }
+];
