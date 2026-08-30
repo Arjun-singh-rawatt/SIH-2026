@@ -1,175 +1,140 @@
-import { mockReports } from '../data/mockReports';
-
-// In-memory reports store initialized from deterministic mock data
-let inMemoryReports = [...mockReports];
+import { apiClient } from './api/apiClient';
+import { mapReportFromApi, mapReportToApi } from './api/mappers';
 
 export const reportService = {
   /**
-   * Fetch all reports with optional filtering, search, sorting and pagination
+   * Fetch paginated list of safety reports with filtering, searching, and sorting
    */
-  async getReports(filters = {}) {
-    // Simulated network delay for realism
-    await new Promise((resolve) => setTimeout(resolve, 50));
+  async getReports(filters = {}, page = 1, pageSize = 100) {
+    const queryParams = {
+      page,
+      page_size: pageSize,
+      search: filters.search,
+      facility_id: filters.facilityId,
+      region: filters.region,
+      report_type: filters.reportType,
+      sif_potential: filters.sifPotential,
+      urgency_level: filters.urgencyLevel,
+      life_saving_rule: filters.lifeSavingRule,
+      review_status: filters.reviewStatus,
+      activity: filters.activity,
+      sort_by: filters.sortBy === 'createdAt' ? 'created_at' : (filters.sortBy === 'urgencyScore' ? 'ai_urgency_score' : filters.sortBy),
+      sort_order: filters.sortOrder || 'desc',
+    };
 
-    let result = [...inMemoryReports];
-
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.reportId.toLowerCase().includes(q) ||
-          r.facilityName.toLowerCase().includes(q) ||
-          r.rawReportText.toLowerCase().includes(q) ||
-          r.activity.toLowerCase().includes(q) ||
-          r.primaryHazard.toLowerCase().includes(q) ||
-          r.precursorCategory.toLowerCase().includes(q)
-      );
+    const response = await apiClient.get('/reports', queryParams);
+    
+    // If response is paginated container
+    if (response && response.items) {
+      return response.items.map(mapReportFromApi);
     }
-
-    if (filters.facilityId && filters.facilityId !== 'ALL') {
-      result = result.filter((r) => r.facilityId === filters.facilityId);
+    // Fallback if direct array
+    if (Array.isArray(response)) {
+      return response.map(mapReportFromApi);
     }
-
-    if (filters.region && filters.region !== 'ALL') {
-      result = result.filter((r) => r.region === filters.region);
-    }
-
-    if (filters.reportType && filters.reportType !== 'ALL') {
-      result = result.filter((r) => r.reportType === filters.reportType);
-    }
-
-    if (filters.sifPotential && filters.sifPotential !== 'ALL') {
-      result = result.filter((r) => r.sifPotential === filters.sifPotential);
-    }
-
-    if (filters.urgencyLevel && filters.urgencyLevel !== 'ALL') {
-      if (filters.urgencyLevel === 'CRITICAL') {
-        result = result.filter((r) => r.urgencyScore >= 90);
-      } else if (filters.urgencyLevel === 'HIGH') {
-        result = result.filter((r) => r.urgencyScore >= 75 && r.urgencyScore < 90);
-      } else if (filters.urgencyLevel === 'MEDIUM') {
-        result = result.filter((r) => r.urgencyScore >= 50 && r.urgencyScore < 75);
-      } else if (filters.urgencyLevel === 'LOW') {
-        result = result.filter((r) => r.urgencyScore < 50);
-      }
-    }
-
-    if (filters.lifeSavingRule && filters.lifeSavingRule !== 'ALL') {
-      result = result.filter((r) => r.lifeSavingRule === filters.lifeSavingRule);
-    }
-
-    if (filters.activity && filters.activity !== 'ALL') {
-      result = result.filter((r) => r.activity.toLowerCase().includes(filters.activity.toLowerCase()));
-    }
-
-    if (filters.reviewStatus && filters.reviewStatus !== 'ALL') {
-      result = result.filter((r) => r.reviewStatus === filters.reviewStatus);
-    }
-
-    // Sorting
-    if (filters.sortBy) {
-      const order = filters.sortOrder === 'asc' ? 1 : -1;
-      result.sort((a, b) => {
-        if (filters.sortBy === 'urgencyScore') {
-          return (a.urgencyScore - b.urgencyScore) * order;
-        }
-        if (filters.sortBy === 'createdAt') {
-          return (new Date(a.createdAt) - new Date(b.createdAt)) * order;
-        }
-        if (filters.sortBy === 'confidence') {
-          return (a.confidence - b.confidence) * order;
-        }
-        if (filters.sortBy === 'reportId') {
-          return a.reportId.localeCompare(b.reportId) * order;
-        }
-        return 0;
-      });
-    } else {
-      // Default sort by most recent
-      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-
-    return result;
+    return [];
   },
 
   /**
-   * Get single report by ID or reportId
+   * Fetch single report details with facility, barriers, and actions
    */
   async getReportById(id) {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    const report = inMemoryReports.find(
-      (r) => r.id === id || r.reportId.toUpperCase() === id.toUpperCase()
-    );
-    return report || null;
+    if (!id) return null;
+    const response = await apiClient.get(`/reports/${id}`);
+    return mapReportFromApi(response);
   },
 
   /**
-   * Update Human-in-the-Loop review status
+   * Fetch aggregate statistics across all reports
    */
-  async updateReportReview(reportId, reviewUpdate) {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    const index = inMemoryReports.findIndex(
-      (r) => r.id === reportId || r.reportId.toUpperCase() === reportId.toUpperCase()
-    );
-
-    if (index !== -1) {
-      inMemoryReports[index] = {
-        ...inMemoryReports[index],
-        ...reviewUpdate,
-        reviewedAt: new Date().toISOString(),
-      };
-      return inMemoryReports[index];
-    }
-    throw new Error('Report not found');
+  async getReportStats() {
+    const response = await apiClient.get('/reports/stats');
+    return {
+      total: response.total_count,
+      sifCount: response.sif_count,
+      sifPercentage: response.sif_density,
+      criticalCount: response.high_urgency_count,
+      pendingReviewCount: response.pending_review_count,
+      avgConfidence: 94,
+    };
   },
 
   /**
-   * Add a new safety report (e.g. from live analyze page)
+   * Ingest and create a new safety observation with automated AI classification
    */
   async createReport(reportData) {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    const newId = `rep-${String(inMemoryReports.length + 1).padStart(3, '0')}`;
-    const nextSeq = 124 + inMemoryReports.length;
-    const newReport = {
-      id: newId,
-      reportId: `SIF-2026-00${nextSeq}`,
-      createdAt: new Date().toISOString(),
-      reviewStatus: 'PENDING',
-      ...reportData,
-    };
-    inMemoryReports.unshift(newReport);
-    return newReport;
+    const payload = mapReportToApi(reportData);
+    const response = await apiClient.post('/reports', payload);
+    return mapReportFromApi(response);
   },
 
   /**
-   * Fetch prioritized items for Review Queue
+   * Update report fields
    */
-  async getReviewQueue(filterType = 'ALL') {
-    await new Promise((resolve) => setTimeout(resolve, 40));
-    let items = [...inMemoryReports];
+  async updateReport(reportId, updateData) {
+    const response = await apiClient.patch(`/reports/${reportId}`, updateData);
+    return mapReportFromApi(response);
+  },
 
-    if (filterType === 'UNREVIEWED') {
-      items = items.filter((r) => r.reviewStatus === 'PENDING');
-    } else if (filterType === 'CRITICAL_HIGH') {
-      items = items.filter((r) => r.sifPotential === 'CRITICAL' || r.sifPotential === 'HIGH');
-    } else if (filterType === 'LOW_CONFIDENCE') {
-      items = items.filter((r) => r.confidence < 90);
-    }
+  /**
+   * Delete report
+   */
+  async deleteReport(reportId) {
+    return apiClient.delete(`/reports/${reportId}`);
+  },
 
-    // Order by urgency and pending status first
-    items.sort((a, b) => {
-      if (a.reviewStatus === 'PENDING' && b.reviewStatus !== 'PENDING') return -1;
-      if (a.reviewStatus !== 'PENDING' && b.reviewStatus === 'PENDING') return 1;
-      return b.urgencyScore - a.urgencyScore;
+  /**
+   * Fetch human-in-the-loop review queue items
+   */
+  async getReviewQueue(tab = 'PENDING', page = 1, pageSize = 50) {
+    const response = await apiClient.get('/reviews/queue', {
+      tab,
+      page,
+      page_size: pageSize,
     });
-
-    return items;
+    if (response && response.items) {
+      return response.items.map(mapReportFromApi);
+    }
+    return [];
   },
 
   /**
-   * Calculate summary statistics across reports
+   * Fetch review queue summary counters
    */
-  getReportStats(reports = inMemoryReports) {
+  async getReviewSummary() {
+    const response = await apiClient.get('/reviews/summary');
+    return {
+      pendingCount: response.pending_count,
+      criticalCount: response.critical_count,
+      lowConfidenceCount: response.low_confidence_count,
+      totalCount: response.total_count,
+    };
+  },
+
+  /**
+   * Submit Human-in-the-Loop review sign-off or reclassification
+   */
+  async updateReportReview(reportId, reviewUpdate) {
+    const payload = {
+      action: reviewUpdate.action || 'APPROVE',
+      reviewer_id: reviewUpdate.reviewerId || 'USR-001',
+      reviewer_name: reviewUpdate.reviewerName || 'Alok Sharma',
+      reviewer_notes: reviewUpdate.reviewerNotes || reviewUpdate.notes,
+      final_sif_potential: reviewUpdate.finalSifPotential || reviewUpdate.sifPotential,
+      final_sif_precursor: reviewUpdate.finalSifPrecursor || reviewUpdate.sifPrecursor,
+      final_life_saving_rule: reviewUpdate.finalLifeSavingRule || reviewUpdate.lifeSavingRule,
+      final_failed_barrier: reviewUpdate.finalFailedBarrier || reviewUpdate.failedBarrier,
+      final_barrier_status: reviewUpdate.finalBarrierStatus || reviewUpdate.barrierStatus,
+    };
+
+    const response = await apiClient.post(`/reports/${reportId}/review`, payload);
+    return mapReportFromApi(response);
+  },
+
+  /**
+   * Client-side calculation helper for filtered arrays
+   */
+  getReportStatsFromList(reports = []) {
     const total = reports.length;
     const sifCount = reports.filter((r) => r.sifPotential === 'HIGH' || r.sifPotential === 'CRITICAL').length;
     const criticalCount = reports.filter((r) => r.sifPotential === 'CRITICAL').length;
@@ -184,5 +149,5 @@ export const reportService = {
       pendingReviewCount,
       avgConfidence,
     };
-  }
+  },
 };

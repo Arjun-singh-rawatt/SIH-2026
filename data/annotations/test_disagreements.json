@@ -1,0 +1,12 @@
+[
+  {
+    "report_id": "SIF-2026-00023",
+    "field_name": "sif_potential",
+    "annotator_a": "HSE-EXP-01",
+    "annotator_b": "HSE-EXP-02",
+    "annotator_a_value": "HIGH",
+    "annotator_b_value": "CRITICAL",
+    "status": "ADJUDICATION_REQUIRED",
+    "notes": null
+  }
+]

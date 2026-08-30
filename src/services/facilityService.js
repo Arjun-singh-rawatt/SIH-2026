@@ -1,14 +1,17 @@
-import { mockFacilities } from '../data/mockFacilities';
-import { mockReports } from '../data/mockReports';
+import { apiClient } from './api/apiClient';
+import { mapFacilityFromApi, mapReportFromApi } from './api/mappers';
 
 export const facilityService = {
+  /**
+   * Fetch all operational facilities
+   */
   async getFacilities(filters = {}) {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    let result = [...mockFacilities];
+    const response = await apiClient.get('/facilities');
+    let facilities = (response || []).map(mapFacilityFromApi);
 
     if (filters.search) {
       const q = filters.search.toLowerCase();
-      result = result.filter(
+      facilities = facilities.filter(
         (f) =>
           f.facilityName.toLowerCase().includes(q) ||
           f.region.toLowerCase().includes(q) ||
@@ -18,33 +21,44 @@ export const facilityService = {
     }
 
     if (filters.region && filters.region !== 'ALL') {
-      result = result.filter((f) => f.region === filters.region);
+      facilities = facilities.filter((f) => f.region === filters.region);
     }
 
     if (filters.riskLevel && filters.riskLevel !== 'ALL') {
-      result = result.filter((f) => f.riskLevel === filters.riskLevel);
+      facilities = facilities.filter((f) => f.riskLevel === filters.riskLevel);
     }
 
     if (filters.sortBy === 'sifDensity') {
-      result.sort((a, b) => b.sifDensity - a.sifDensity);
+      facilities.sort((a, b) => b.sifDensity - a.sifDensity);
     } else if (filters.sortBy === 'totalReports') {
-      result.sort((a, b) => b.totalReports - a.totalReports);
+      facilities.sort((a, b) => b.totalReports - a.totalReports);
     }
 
-    return result;
+    return facilities;
   },
 
+  /**
+   * Fetch specific facility details with live KPI stats and recent reports
+   */
   async getFacilityById(facilityId) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const facility = mockFacilities.find((f) => f.facilityId === facilityId);
-    if (!facility) return null;
+    if (!facilityId) return null;
 
-    // Get associated reports for this facility
-    const facilityReports = mockReports.filter((r) => r.facilityId === facilityId);
+    const [facDetails, facStats, recentReportsRes] = await Promise.all([
+      apiClient.get(`/facilities/${facilityId}`),
+      apiClient.get(`/facilities/${facilityId}/stats`).catch(() => ({})),
+      apiClient.get('/reports', { facility_id: facilityId, page_size: 10 }).catch(() => ({ items: [] })),
+    ]);
+
+    const mapped = mapFacilityFromApi({
+      ...facDetails,
+      ...facStats,
+    });
+
+    const recentReports = (recentReportsRes.items || []).map(mapReportFromApi);
 
     return {
-      ...facility,
-      recentReports: facilityReports,
+      ...mapped,
+      recentReports,
     };
   },
 };

@@ -1,0 +1,160 @@
+{
+  "experiment_id": "exp-task001-20260830-161115",
+  "task": "TASK-001",
+  "dataset_version": "0.1.0",
+  "is_demo_dataset": true,
+  "model_type": "LogisticRegression(class_weight=None, C=1.0)",
+  "feature_type": "TF-IDF (ngram=(1, 2), sublinear_tf=True)",
+  "hyperparameters": {
+    "model_type": "LogisticRegression",
+    "C": 1.0,
+    "class_weight": null,
+    "max_iter": 1000,
+    "random_seed": 42,
+    "solver": "lbfgs"
+  },
+  "training_timestamp": "2026-08-30T16:11:15.911507+00:00",
+  "random_seed": 42,
+  "environment": {
+    "python_version": "3.12.4",
+    "sklearn_version": "1.9.0",
+    "numpy_version": "2.5.2",
+    "platform": "macOS-26.6.2-arm64-arm-64bit"
+  },
+  "validation_metrics": {
+    "total_samples": 6,
+    "accuracy": 1.0,
+    "macro_precision": 1.0,
+    "macro_recall": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "high_sif_recall": 1.0,
+    "high_sif_support": 3,
+    "high_sif_correct": 3,
+    "per_class_metrics": [
+      {
+        "class_name": "CRITICAL",
+        "support": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      {
+        "class_name": "HIGH",
+        "support": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      {
+        "class_name": "MEDIUM",
+        "support": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      {
+        "class_name": "LOW",
+        "support": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      {
+        "class_name": "NON-SIF",
+        "support": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      }
+    ],
+    "confusion_matrix_classes": [
+      "CRITICAL",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "NON-SIF"
+    ],
+    "confusion_matrix_grid": [
+      [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    ]
+  },
+  "test_metrics": {
+    "total_samples": 2,
+    "accuracy": 0.5,
+    "macro_precision": 0.25,
+    "macro_recall": 0.5,
+    "macro_f1": 0.3333,
+    "weighted_f1": 0.3333,
+    "high_sif_recall": 1.0,
+    "high_sif_support": 1,
+    "high_sif_correct": 1,
+    "per_class_metrics": [
+      {
+        "class_name": "CRITICAL",
+        "support": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1_score": 0.6667
+      },
+      {
+        "class_name": "NON-SIF",
+        "support": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      }
+    ],
+    "confusion_matrix_classes": [
+      "CRITICAL",
+      "NON-SIF"
+    ],
+    "confusion_matrix_grid": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ]
+  },
+  "model_artifact_path": "models/task_001/sift-task-001-baseline-v0.1.0.joblib",
+  "status": "COMPLETED",
+  "notes": null
+}

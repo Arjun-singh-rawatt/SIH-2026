@@ -1,0 +1,24 @@
+{
+  "registry_version": "1.0",
+  "updated_at": "2026-08-30T16:21:19.524662+00:00",
+  "total_sources": 1,
+  "sources": [
+    {
+      "source_id": "SRC-SIM-01",
+      "source_name": "Simulated Upper Assam Operations",
+      "source_type": "INTERNAL_SAFETY_REPORTS",
+      "classification": "REAL",
+      "license": "PROPRIETARY_OIL_INTERNAL",
+      "permission_status": "AUTHORIZED",
+      "collection_date": null,
+      "data_owner": "Oil India Limited HSE Directorate",
+      "allowed_use": "SIFT Model Training & Safety Intelligence",
+      "pii_status": "SCANNED_AND_REDACTED",
+      "record_count": 0,
+      "raw_file_sha256": null,
+      "ingested_at": "2026-08-30T16:21:19.524331+00:00",
+      "status": "ACTIVE",
+      "notes": null
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "dataset_id": "sift_demo_dataset",
+  "version": "0.1.0",
+  "taxonomy_version": "1.0",
+  "source_description": "Ingested from sample_raw_reports.jsonl",
+  "created_at": "2026-08-30T16:03:12.612697+00:00",
+  "total_records": 5,
+  "split_strategy": "Temporal Stratified Grouping with Event & Duplicate Isolation (70/15/15)",
+  "random_seed": 42,
+  "overall_statistics": {
+    "total_records": 5,
+    "sif_potential_distribution": {
+      "CRITICAL": 2,
+      "HIGH": 1,
+      "NON-SIF": 1,
+      "LOW": 1
+    },
+    "sif_potential_pct": {
+      "CRITICAL": 40.0,
+      "HIGH": 20.0,
+      "NON-SIF": 20.0,
+      "LOW": 20.0
+    },
+    "sif_precursor_distribution": {
+      "YES": 3,
+      "NO": 2
+    },
+    "precursor_categories_distribution": {
+      "Procedural Safety": 2,
+      "Lifting Operations": 1,
+      "Line of Fire": 1,
+      "Confined Space": 1,
+      "Toxic Gas & Chemical Exposure": 1,
+      "Working at Height": 1
+    },
+    "primary_hazards_distribution": {
+      "Operational Hazard Exposure": 2,
+      "Dropped Heavy Object / Line of Fire": 1,
+      "Toxic Gas / Asphyxiation (H2S & O2 Deficiency)": 1,
+      "Unprotected Fall from Elevated Height (>2m)": 1
+    },
+    "life_saving_rules_distribution": {
+      "Work Authorization & PTW": 2,
+      "Safe Mechanical Lifting": 1,
+      "Confined Space Entry": 1,
+      "Working at Height": 1
+    },
+    "activities_distribution": {
+      "Maintenance": 2,
+      "Drilling Operations": 1,
+      "Vessel Cleaning & Desanding": 1,
+      "Working at Height": 1
+    },
+    "barrier_statuses_distribution": {
+      "FAILED": 3,
+      "WEAK": 2
+    },
+    "report_types_distribution": {
+      "Unsafe Act": 2,
+      "Near Miss": 1,
+      "Unsafe Condition": 1,
+      "Incident": 1
+    },
+    "facilities_distribution": {
+      "FAC-NHK-06": 1,
+      "FAC-MAK-04": 1,
+      "FAC-DIG-02": 1,
+      "FAC-DUL-01": 1,
+      "FAC-JOR-05": 1
+    },
+    "total_evidence_spans": 5,
+    "avg_spans_per_record": 1.0,
+    "records_with_zero_spans": 0,
+    "avg_span_length_chars": 80.6
+  },
+  "train_statistics": {
+    "total_records": 3,
+    "sif_potential_distribution": {
+      "CRITICAL": 2,
+      "HIGH": 1
+    },
+    "sif_potential_pct": {
+      "CRITICAL": 66.67,
+      "HIGH": 33.33
+    },
+    "sif_precursor_distribution": {
+      "YES": 3
+    },
+    "precursor_categories_distribution": {
+      "Lifting Operations": 1,
+      "Line of Fire": 1,
+      "Confined Space": 1,
+      "Toxic Gas & Chemical Exposure": 1,
+      "Working at Height": 1
+    },
+    "primary_hazards_distribution": {
+      "Dropped Heavy Object / Line of Fire": 1,
+      "Toxic Gas / Asphyxiation (H2S & O2 Deficiency)": 1,
+      "Unprotected Fall from Elevated Height (>2m)": 1
+    },
+    "life_saving_rules_distribution": {
+      "Safe Mechanical Lifting": 1,
+      "Confined Space Entry": 1,
+      "Working at Height": 1
+    },
+    "activities_distribution": {
+      "Drilling Operations": 1,
+      "Vessel Cleaning & Desanding": 1,
+      "Working at Height": 1
+    },
+    "barrier_statuses_distribution": {
+      "FAILED": 3
+    },
+    "report_types_distribution": {
+      "Unsafe Act": 2,
+      "Near Miss": 1
+    },
+    "facilities_distribution": {
+      "FAC-NHK-06": 1,
+      "FAC-MAK-04": 1,
+      "FAC-DIG-02": 1
+    },
+    "total_evidence_spans": 3,
+    "avg_spans_per_record": 1.0,
+    "records_with_zero_spans": 0,
+    "avg_span_length_chars": 90.33
+  },
+  "val_statistics": {
+    "total_records": 0,
+    "sif_potential_distribution": {},
+    "sif_potential_pct": {},
+    "sif_precursor_distribution": {},
+    "precursor_categories_distribution": {},
+    "primary_hazards_distribution": {},
+    "life_saving_rules_distribution": {},
+    "activities_distribution": {},
+    "barrier_statuses_distribution": {},
+    "report_types_distribution": {},
+    "facilities_distribution": {},
+    "total_evidence_spans": 0,
+    "avg_spans_per_record": 0.0,
+    "records_with_zero_spans": 0,
+    "avg_span_length_chars": 0.0
+  },
+  "test_statistics": {
+    "total_records": 2,
+    "sif_potential_distribution": {
+      "NON-SIF": 1,
+      "LOW": 1
+    },
+    "sif_potential_pct": {
+      "NON-SIF": 50.0,
+      "LOW": 50.0
+    },
+    "sif_precursor_distribution": {
+      "NO": 2
+    },
+    "precursor_categories_distribution": {
+      "Procedural Safety": 2
+    },
+    "primary_hazards_distribution": {
+      "Operational Hazard Exposure": 2
+    },
+    "life_saving_rules_distribution": {
+      "Work Authorization & PTW": 2
+    },
+    "activities_distribution": {
+      "Maintenance": 2
+    },
+    "barrier_statuses_distribution": {
+      "WEAK": 2
+    },
+    "report_types_distribution": {
+      "Unsafe Condition": 1,
+      "Incident": 1
+    },
+    "facilities_distribution": {
+      "FAC-DUL-01": 1,
+      "FAC-JOR-05": 1
+    },
+    "total_evidence_spans": 2,
+    "avg_spans_per_record": 1.0,
+    "records_with_zero_spans": 0,
+    "avg_span_length_chars": 66.0
+  },
+  "validation_summary": {
+    "valid": 5,
+    "invalid": 0
+  },
+  "governance_summary": {
+    "pii_flagged": 0,
+    "redaction_applied": false
+  },
+  "leakage_summary": {
+    "leakage_passed": true,
+    "clusters_count": 5
+  }
+}

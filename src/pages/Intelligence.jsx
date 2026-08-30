@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Network,
@@ -10,14 +10,14 @@ import {
   AlertTriangle,
   RotateCcw,
   Layers,
+  Loader2,
 } from 'lucide-react';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PatternCard } from '../components/intelligence/PatternCard';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { mockPatterns } from '../data/mockPatterns';
-import { mockFacilities } from '../data/mockFacilities';
-import { mockLifeSavingRules } from '../data/mockLifeSavingRules';
+import { intelligenceService } from '../services/intelligenceService';
+import { facilityService } from '../services/facilityService';
 
 export function Intelligence() {
   const navigate = useNavigate();
@@ -27,27 +27,50 @@ export function Intelligence() {
   const [riskFilter, setRiskFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter patterns
-  const filteredPatterns = mockPatterns.filter((pat) => {
-    if (categoryFilter !== 'ALL' && pat.category !== categoryFilter) return false;
-    if (riskFilter !== 'ALL' && pat.riskLevel !== riskFilter) return false;
-    if (facilityFilter !== 'ALL') {
-      const matchFac = pat.affectedFacilities.some((f) =>
-        f.toLowerCase().includes(facilityFilter.toLowerCase())
-      );
-      if (!matchFac) return false;
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchSearch =
-        pat.title.toLowerCase().includes(q) ||
-        pat.description.toLowerCase().includes(q) ||
-        pat.commonBarrierFailure.toLowerCase().includes(q) ||
-        pat.category.toLowerCase().includes(q);
-      if (!matchSearch) return false;
-    }
-    return true;
+  const [patterns, setPatterns] = useState([]);
+  const [overview, setOverview] = useState({
+    totalPatterns: 0,
+    criticalPatterns: 0,
+    affectedFacilitiesCount: 0,
+    dominantPrecursor: 'Energy Isolation',
   });
+  const [facilities, setFacilities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadIntelligence() {
+      setLoading(true);
+      try {
+        const [patternsData, overviewData, facs] = await Promise.all([
+          intelligenceService.getPatterns({
+            category: categoryFilter,
+            riskLevel: riskFilter,
+            facility: facilityFilter,
+            search: searchQuery,
+          }),
+          intelligenceService.getPatternOverview().catch(() => ({})),
+          facilityService.getFacilities().catch(() => []),
+        ]);
+
+        if (isMounted) {
+          setPatterns(patternsData || []);
+          if (overviewData.totalPatterns) {
+            setOverview(overviewData);
+          }
+          setFacilities(facs || []);
+        }
+      } catch (err) {
+        console.error('Error fetching intelligence patterns:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadIntelligence();
+    return () => {
+      isMounted = false;
+    };
+  }, [categoryFilter, facilityFilter, riskFilter, searchQuery]);
 
   const handleResetFilters = () => {
     setCategoryFilter('ALL');
@@ -56,8 +79,8 @@ export function Intelligence() {
     setSearchQuery('');
   };
 
-  const highPriorityCount = mockPatterns.filter((p) => p.riskLevel === 'CRITICAL').length;
-  const categoriesList = Array.from(new Set(mockPatterns.map((p) => p.category)));
+  const highPriorityCount = patterns.filter((p) => p.riskLevel === 'CRITICAL').length;
+  const categoriesList = Array.from(new Set(patterns.map((p) => p.category)));
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -83,7 +106,7 @@ export function Intelligence() {
             Recurring Precursor Patterns
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-ink-primary font-sans">{mockPatterns.length}</span>
+            <span className="text-3xl font-black text-ink-primary font-sans">{overview.totalPatterns || patterns.length}</span>
             <span className="text-[10px] text-ink-muted font-bold">Clusters</span>
           </div>
         </Card>
@@ -93,7 +116,7 @@ export function Intelligence() {
             Critical Risk Patterns
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-red-950 font-sans">{highPriorityCount}</span>
+            <span className="text-3xl font-black text-red-950 font-sans">{overview.criticalPatterns || highPriorityCount}</span>
             <span className="text-[10px] font-black text-red-900 bg-red-100/90 px-2 py-0.2 rounded-full shadow-spatial-xs">
               High Fatality Risk
             </span>
@@ -105,7 +128,7 @@ export function Intelligence() {
             Operational Sites Affected
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-ink-primary font-sans">{mockFacilities.length}</span>
+            <span className="text-3xl font-black text-ink-primary font-sans">{overview.affectedFacilitiesCount || facilities.length || 10}</span>
             <span className="text-[10px] text-ink-muted font-bold">Basins & Hubs</span>
           </div>
         </Card>
@@ -115,8 +138,8 @@ export function Intelligence() {
             Dominant Precursor
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-base font-black text-amber-950 truncate font-sans">Energy Isolation</span>
-            <span className="text-[10px] text-amber-900 font-mono font-extrabold">42 rep</span>
+            <span className="text-base font-black text-amber-950 truncate font-sans">{overview.dominantPrecursor || 'Energy Isolation'}</span>
+            <span className="text-[10px] text-amber-900 font-mono font-extrabold">Active</span>
           </div>
         </Card>
       </div>
@@ -159,9 +182,7 @@ export function Intelligence() {
             >
               <option value="ALL">All Categories</option>
               {categoriesList.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
           </div>
@@ -176,44 +197,49 @@ export function Intelligence() {
               className="sift-select w-full text-xs font-bold py-2 px-3 rounded-2xl"
             >
               <option value="ALL">All Risk Levels</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
+              <option value="CRITICAL">Critical Severity</option>
+              <option value="HIGH">High Severity</option>
+              <option value="MEDIUM">Medium Severity</option>
             </select>
           </div>
 
           <div>
             <label className="block text-[10px] font-extrabold uppercase tracking-widest text-ink-muted mb-1">
-              Facility Focus
+              Target Facility
             </label>
             <select
               value={facilityFilter}
               onChange={(e) => setFacilityFilter(e.target.value)}
-              className="sift-select w-full text-xs font-medium py-2 px-3 rounded-2xl"
+              className="sift-select w-full text-xs font-bold py-2 px-3 rounded-2xl"
             >
               <option value="ALL">All Facilities</option>
-              {mockFacilities.map((f) => (
-                <option key={f.facilityId} value={f.shortName}>
-                  {f.shortName}
-                </option>
+              {facilities.map((f) => (
+                <option key={f.facilityId} value={f.shortName || f.facilityName}>{f.shortName || f.facilityName}</option>
               ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Pattern Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7">
-        {filteredPatterns.length === 0 ? (
-          <div className="lg:col-span-2 p-12 text-center text-ink-muted bg-white border border-surface-border/80 rounded-3.5xl shadow-spatial">
-            No patterns match the selected criteria.
-          </div>
-        ) : (
-          filteredPatterns.map((pat) => (
-            <PatternCard key={pat.patternId} pattern={pat} />
-          ))
-        )}
-      </div>
+      {/* Detected Patterns Cards Grid */}
+      {loading ? (
+        <div className="bg-white border border-surface-border/80 rounded-3.5xl p-16 text-center shadow-spatial flex flex-col items-center justify-center space-y-3">
+          <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
+          <p className="text-xs font-bold text-ink-muted">Aggregating cross-site precursor patterns from SIFT database...</p>
+        </div>
+      ) : patterns.length === 0 ? (
+        <div className="p-12 text-center text-ink-muted bg-white border border-surface-border/80 rounded-3.5xl shadow-spatial">
+          <Layers className="w-10 h-10 text-ink-muted mx-auto mb-2 opacity-50" />
+          <h3 className="text-base font-extrabold text-ink-primary">No Patterns Match Filters</h3>
+          <p className="text-xs text-ink-muted mt-1">Try resetting the filter criteria.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {patterns.map((pattern) => (
+            <PatternCard key={pattern.patternId} pattern={pattern} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

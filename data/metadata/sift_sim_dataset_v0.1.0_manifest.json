@@ -1,0 +1,38 @@
+{
+  "dataset_id": "sift_sim_dataset",
+  "version": "0.1.0",
+  "taxonomy_version": "1.0",
+  "annotation_protocol_version": "1.0",
+  "schema_version": "1.0",
+  "created_at": "2026-08-30T16:24:28.427875+00:00",
+  "files": [
+    {
+      "name": "sift_sim_dataset_v0.1.0_validated.jsonl",
+      "relative_path": "validated/sift_sim_dataset_v0.1.0_validated.jsonl",
+      "sha256": "917cf7b27772fdb1a57e9af573998175176299bea6045f16ed6d4750ddb506be",
+      "record_count": 2,
+      "size_bytes": 1570
+    },
+    {
+      "name": "sift_sim_dataset_v0.1.0_train.jsonl",
+      "relative_path": "splits/sift_sim_dataset_v0.1.0_train.jsonl",
+      "sha256": "82528ba81b6ff5541762f9cd81004f2f8394697a79bd6193609d46165759482c",
+      "record_count": 1,
+      "size_bytes": 807
+    },
+    {
+      "name": "sift_sim_dataset_v0.1.0_val.jsonl",
+      "relative_path": "splits/sift_sim_dataset_v0.1.0_val.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "record_count": 0,
+      "size_bytes": 0
+    },
+    {
+      "name": "sift_sim_dataset_v0.1.0_test.jsonl",
+      "relative_path": "splits/sift_sim_dataset_v0.1.0_test.jsonl",
+      "sha256": "a85b40d79b58bedeeec928bb5ecbc7d30568eb590d1b41f4aa4447dc8f4bd558",
+      "record_count": 1,
+      "size_bytes": 798
+    }
+  ]
+}

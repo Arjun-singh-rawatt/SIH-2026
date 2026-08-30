@@ -1,0 +1,41 @@
+{
+  "total_samples": 2,
+  "accuracy": 0.5,
+  "macro_precision": 0.25,
+  "macro_recall": 0.5,
+  "macro_f1": 0.3333,
+  "weighted_f1": 0.3333,
+  "high_sif_recall": 1.0,
+  "high_sif_support": 1,
+  "high_sif_correct": 1,
+  "per_class_metrics": [
+    {
+      "class_name": "CRITICAL",
+      "support": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1_score": 0.6667
+    },
+    {
+      "class_name": "NON-SIF",
+      "support": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    }
+  ],
+  "confusion_matrix_classes": [
+    "CRITICAL",
+    "NON-SIF"
+  ],
+  "confusion_matrix_grid": [
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ]
+  ]
+}

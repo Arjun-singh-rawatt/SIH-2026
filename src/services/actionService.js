@@ -1,83 +1,76 @@
-import { mockActions } from '../data/mockActions';
-
-let inMemoryActions = [...mockActions];
+import { apiClient } from './api/apiClient';
+import { mapActionFromApi, mapActionToApi } from './api/mappers';
 
 export const actionService = {
-  async getActions(filters = {}) {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    let result = [...inMemoryActions];
-
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      result = result.filter(
-        (a) =>
-          a.actionId.toLowerCase().includes(q) ||
-          a.reportTitle.toLowerCase().includes(q) ||
-          a.description.toLowerCase().includes(q) ||
-          a.assigneeName.toLowerCase().includes(q) ||
-          a.facilityName.toLowerCase().includes(q)
-      );
-    }
-
-    if (filters.status && filters.status !== 'ALL') {
-      result = result.filter((a) => a.status === filters.status);
-    }
-
-    if (filters.priority && filters.priority !== 'ALL') {
-      result = result.filter((a) => a.priority === filters.priority);
-    }
-
-    if (filters.facilityId && filters.facilityId !== 'ALL') {
-      result = result.filter((a) => a.facilityId === filters.facilityId);
-    }
-
-    if (filters.reportId) {
-      result = result.filter((a) => a.reportId.toUpperCase() === filters.reportId.toUpperCase());
-    }
-
-    return result;
-  },
-
-  async getActionById(actionId) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    return inMemoryActions.find((a) => a.actionId === actionId) || null;
-  },
-
-  async updateActionStatus(actionId, newStatus) {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    const index = inMemoryActions.findIndex((a) => a.actionId === actionId);
-    if (index !== -1) {
-      inMemoryActions[index] = {
-        ...inMemoryActions[index],
-        status: newStatus,
-        completedAt: newStatus === 'Completed' ? new Date().toISOString() : inMemoryActions[index].completedAt,
-      };
-      return inMemoryActions[index];
-    }
-    throw new Error('Action not found');
-  },
-
-  async createAction(actionData) {
-    await new Promise((resolve) => setTimeout(resolve, 40));
-    const newSeq = 80 + inMemoryActions.length + 1;
-    const newAction = {
-      actionId: `ACT-2026-0${newSeq}`,
-      createdAt: new Date().toISOString(),
-      status: 'Open',
-      completedAt: null,
-      ...actionData,
+  /**
+   * Fetch paginated CAPA actions with multi-dimensional filtering
+   */
+  async getActions(filters = {}, page = 1, pageSize = 100) {
+    const queryParams = {
+      page,
+      page_size: pageSize,
+      search: filters.search,
+      status: filters.status,
+      priority: filters.priority,
+      facility_id: filters.facilityId,
+      assigned_to: filters.assignedTo,
+      report_id: filters.reportId,
     };
-    inMemoryActions.unshift(newAction);
-    return newAction;
+
+    const response = await apiClient.get('/actions', queryParams);
+    if (response && response.items) {
+      return response.items.map(mapActionFromApi);
+    }
+    if (Array.isArray(response)) {
+      return response.map(mapActionFromApi);
+    }
+    return [];
   },
 
-  getActionStats() {
-    const total = inMemoryActions.length;
-    const open = inMemoryActions.filter((a) => a.status === 'Open').length;
-    const inProgress = inMemoryActions.filter((a) => a.status === 'In Progress').length;
-    const completed = inMemoryActions.filter((a) => a.status === 'Completed').length;
-    const overdue = inMemoryActions.filter((a) => a.status === 'Overdue').length;
+  /**
+   * Fetch single action by ID
+   */
+  async getActionById(actionId) {
+    if (!actionId) return null;
+    const response = await apiClient.get(`/actions/${actionId}`);
+    return mapActionFromApi(response);
+  },
 
-    return { total, open, inProgress, completed, overdue };
+  /**
+   * Update action status (e.g. Open -> In Progress -> Completed)
+   */
+  async updateActionStatus(actionId, newStatus) {
+    const response = await apiClient.patch(`/actions/${actionId}`, { status: newStatus });
+    return mapActionFromApi(response);
+  },
+
+  /**
+   * Create and assign a new CAPA action item
+   */
+  async createAction(actionData) {
+    const payload = mapActionToApi(actionData);
+    const response = await apiClient.post('/actions', payload);
+    return mapActionFromApi(response);
+  },
+
+  /**
+   * Delete an action item
+   */
+  async deleteAction(actionId) {
+    return apiClient.delete(`/actions/${actionId}`);
+  },
+
+  /**
+   * Fetch overall action statistics counters
+   */
+  async getActionStats() {
+    const response = await apiClient.get('/actions/stats');
+    return {
+      total: response.total,
+      open: response.open,
+      inProgress: response.in_progress,
+      completed: response.completed,
+      overdue: response.overdue,
+    };
   },
 };

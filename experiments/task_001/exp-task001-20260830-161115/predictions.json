@@ -1,0 +1,28 @@
+[
+  {
+    "report_id": "ML-TE-01",
+    "raw_text_excerpt": "High pressure gas line flange blew out releasing 35 bar hydrocarbon gas during hot work.",
+    "actual_label": "CRITICAL",
+    "predicted_label": "CRITICAL",
+    "scores": {
+      "CRITICAL": 0.4309,
+      "HIGH": 0.1419,
+      "LOW": 0.1424,
+      "MEDIUM": 0.1425,
+      "NON-SIF": 0.1424
+    }
+  },
+  {
+    "report_id": "ML-TE-02",
+    "raw_text_excerpt": "Housekeeping notice: discarded paper towels in washroom area disposed promptly.",
+    "actual_label": "NON-SIF",
+    "predicted_label": "CRITICAL",
+    "scores": {
+      "CRITICAL": 0.307,
+      "HIGH": 0.1597,
+      "LOW": 0.1599,
+      "MEDIUM": 0.1602,
+      "NON-SIF": 0.2133
+    }
+  }
+]

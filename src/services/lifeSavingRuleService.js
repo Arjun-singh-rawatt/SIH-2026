@@ -1,29 +1,21 @@
-import { mockLifeSavingRules } from '../data/mockLifeSavingRules';
-import { mockReports } from '../data/mockReports';
+import { apiClient } from './api/apiClient';
+import { mapLifeSavingRuleFromApi } from './api/mappers';
 
 export const lifeSavingRuleService = {
+  /**
+   * Fetch all IOGP Life-Saving Rules with calculated failure statistics
+   */
   async getLifeSavingRules() {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    return [...mockLifeSavingRules];
+    const response = await apiClient.get('/life-saving-rules');
+    return (response || []).map(mapLifeSavingRuleFromApi);
   },
 
+  /**
+   * Fetch specific Life-Saving Rule details with associated reports
+   */
   async getRuleById(id) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const rule = mockLifeSavingRules.find(
-      (r) => r.id.toLowerCase() === id.toLowerCase() || r.category.toLowerCase() === id.toLowerCase()
-    );
-    if (!rule) return null;
-
-    // Associated reports
-    const associatedReports = mockReports.filter(
-      (r) =>
-        r.lifeSavingRule.toLowerCase() === rule.name.toLowerCase() ||
-        r.precursorCategory.toLowerCase() === rule.category.toLowerCase()
-    );
-
-    return {
-      ...rule,
-      associatedReports,
-    };
+    if (!id) return null;
+    const response = await apiClient.get(`/life-saving-rules/${id}`);
+    return mapLifeSavingRuleFromApi(response);
   },
 };

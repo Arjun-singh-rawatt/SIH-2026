@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { FileText, Sparkles, Download, Plus } from 'lucide-react';
+import { FileText, Sparkles, Download, Plus, Loader2 } from 'lucide-react';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ReportFilters } from '../components/reports/ReportFilters';
 import { ReportTable } from '../components/reports/ReportTable';
@@ -12,7 +12,7 @@ import { useReportsContext } from '../context/ReportsContext';
 export function Reports() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { reports: allReports } = useReportsContext();
+  const { reports: allReports, lastUpdated } = useReportsContext();
 
   // Read filters from URL params or state
   const [filters, setFilters] = useState({
@@ -69,7 +69,7 @@ export function Reports() {
     handleFilterChange({ sortBy: field, sortOrder: order });
   };
 
-  // Filter against mock reports
+  // Filter against backend API
   useEffect(() => {
     let isMounted = true;
     async function filterData() {
@@ -80,7 +80,7 @@ export function Reports() {
           setFilteredReports(result);
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching reports from backend:', err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -89,11 +89,11 @@ export function Reports() {
     return () => {
       isMounted = false;
     };
-  }, [filters, allReports]);
+  }, [filters, lastUpdated]);
 
   // Summary stats calculated for active filtered reports
   const stats = useMemo(() => {
-    return reportService.getReportStats(filteredReports);
+    return reportService.getReportStatsFromList(filteredReports);
   }, [filteredReports]);
 
   return (
@@ -128,7 +128,7 @@ export function Reports() {
       {/* Summary Statistics Strip */}
       <ReportStatsBanner
         stats={stats}
-        totalCount={allReports.length}
+        totalCount={allReports.length || filteredReports.length}
         filteredCount={filteredReports.length}
       />
 
@@ -140,13 +140,20 @@ export function Reports() {
       />
 
       {/* Main Table */}
-      <ReportTable
-        reports={filteredReports}
-        sortBy={filters.sortBy}
-        sortOrder={filters.sortOrder}
-        onSort={handleSort}
-        onResetFilters={handleResetFilters}
-      />
+      {loading ? (
+        <div className="bg-white border border-surface-border/80 rounded-3.5xl p-12 text-center shadow-spatial flex flex-col items-center justify-center space-y-3">
+          <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
+          <p className="text-xs font-bold text-ink-muted">Querying safety observations from SIFT API...</p>
+        </div>
+      ) : (
+        <ReportTable
+          reports={filteredReports}
+          sortBy={filters.sortBy}
+          sortOrder={filters.sortOrder}
+          onSort={handleSort}
+          onResetFilters={handleResetFilters}
+        />
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckSquare,
@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   Filter,
+  Loader2,
 } from 'lucide-react';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
@@ -18,37 +19,54 @@ import { Button } from '../components/ui/Button';
 import { SIFPotentialBadge, ReviewStatusBadge, UrgencyScoreBadge } from '../components/ui/RiskBadge';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { formatDate } from '../utils/formatters';
+import { reportService } from '../services/reportService';
 import { useReportsContext } from '../context/ReportsContext';
 
 export function ReviewQueue() {
   const navigate = useNavigate();
-  const { reports, updateReportReview } = useReportsContext();
+  const { lastUpdated } = useReportsContext();
 
   const [activeTab, setActiveTab] = useState('PENDING');
+  const [queueItems, setQueueItems] = useState([]);
+  const [summary, setSummary] = useState({
+    pendingCount: 0,
+    criticalCount: 0,
+    lowConfidenceCount: 0,
+    totalCount: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const pendingList = reports.filter((r) => r.reviewStatus === 'PENDING');
-  const criticalList = reports.filter((r) => r.sifPotential === 'CRITICAL' || r.sifPotential === 'HIGH');
-  const lowConfidenceList = reports.filter((r) => (r.confidence || 0) < 94);
-  const reviewedList = reports.filter((r) => r.reviewStatus === 'APPROVED' || r.reviewStatus === 'MODIFIED');
+  useEffect(() => {
+    let isMounted = true;
+    async function loadQueueData() {
+      setLoading(true);
+      try {
+        const [items, sum] = await Promise.all([
+          reportService.getReviewQueue(activeTab, 1, 50),
+          reportService.getReviewSummary(),
+        ]);
+        if (isMounted) {
+          setQueueItems(items);
+          setSummary(sum);
+        }
+      } catch (err) {
+        console.error('Error fetching review queue from backend:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadQueueData();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTab, lastUpdated]);
 
   const tabs = [
-    { id: 'PENDING', label: 'Pending Review', count: pendingList.length },
-    { id: 'CRITICAL', label: 'High / Critical SIF', count: criticalList.length },
-    { id: 'LOW_CONF', label: 'Model Review Required (<94% Conf)', count: lowConfidenceList.length },
-    { id: 'ALL', label: 'All Reports', count: reports.length },
+    { id: 'PENDING', label: 'Pending Review', count: summary.pendingCount },
+    { id: 'CRITICAL', label: 'High / Critical SIF', count: summary.criticalCount },
+    { id: 'LOW_CONF', label: 'Model Review Required (<94% Conf)', count: summary.lowConfidenceCount },
+    { id: 'ALL', label: 'All Reports', count: summary.totalCount },
   ];
-
-  let displayReports = reports;
-  if (activeTab === 'PENDING') {
-    displayReports = pendingList;
-  } else if (activeTab === 'CRITICAL') {
-    displayReports = criticalList;
-  } else if (activeTab === 'LOW_CONF') {
-    displayReports = lowConfidenceList;
-  }
-
-  // Sort by urgency descending
-  displayReports.sort((a, b) => b.urgencyScore - a.urgencyScore);
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -57,7 +75,7 @@ export function ReviewQueue() {
         subtitle="HSE safety professionals triage, validate, and sign off on AI-classified fatality precursors and barrier assessments."
         badge={
           <span className="px-3.5 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-950 border border-amber-300 shadow-spatial-xs">
-            {pendingList.length} Pending Sign-off
+            {summary.pendingCount} Pending Sign-off
           </span>
         }
       />
@@ -69,7 +87,12 @@ export function ReviewQueue() {
 
       {/* Queue List Cards */}
       <div className="space-y-4">
-        {displayReports.length === 0 ? (
+        {loading ? (
+          <div className="p-16 text-center text-ink-muted bg-white border border-surface-border/80 rounded-3.5xl shadow-spatial flex flex-col items-center justify-center space-y-3">
+            <Loader2 className="w-8 h-8 text-emerald-800 animate-spin" />
+            <p className="text-xs font-bold text-ink-muted">Loading review queue items...</p>
+          </div>
+        ) : queueItems.length === 0 ? (
           <div className="p-12 text-center text-ink-muted bg-white border border-surface-border/80 rounded-3.5xl shadow-spatial">
             <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
             <h3 className="text-base font-extrabold text-ink-primary">Queue Clear</h3>
@@ -78,7 +101,7 @@ export function ReviewQueue() {
             </p>
           </div>
         ) : (
-          displayReports.map((report) => {
+          queueItems.map((report) => {
             const isPending = report.reviewStatus === 'PENDING';
             return (
               <div

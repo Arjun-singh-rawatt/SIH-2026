@@ -1,0 +1,25 @@
+{
+  "batch_id": "BATCH-2026-001",
+  "source_id": "SRC-SIM-01",
+  "created_at": "2026-08-30T16:21:32.339424+00:00",
+  "updated_at": "2026-08-30T16:23:26.301115+00:00",
+  "annotation_protocol_version": "1.0",
+  "taxonomy_version": "1.0",
+  "record_count": 5,
+  "report_ids": [
+    "SIF-2026-00001",
+    "SIF-2026-00002",
+    "SIF-2026-00003",
+    "SIF-2026-00004",
+    "SIF-2026-00005"
+  ],
+  "annotator_ids": [
+    "HSE-ANN-01",
+    "HSE-ANN-02"
+  ],
+  "status": "UNDER_REVIEW",
+  "completed_submissions_count": 3,
+  "discrepancy_count": 1,
+  "adjudicated_count": 0,
+  "notes": null
+}
