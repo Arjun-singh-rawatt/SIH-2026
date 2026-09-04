@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { reportService } from '../services/reportService';
 import { actionService } from '../services/actionService';
 import { analyticsService } from '../services/analyticsService';
+import { demoReports } from '../data/demoReports';
 
 const ReportsContext = createContext(null);
 
@@ -20,7 +21,12 @@ export function ReportsProvider({ children }) {
         reportService.getReports({}, 1, 100),
         actionService.getActions({}, 1, 100),
       ]);
-      setReports(fetchedReports);
+      const fetchedReportIds = new Set(fetchedReports.map((report) => report.reportId));
+      const reportsWithDemoData = [
+        ...demoReports.filter((report) => !fetchedReportIds.has(report.reportId)),
+        ...fetchedReports,
+      ];
+      setReports(reportsWithDemoData);
       setActions(fetchedActions);
       analyticsService.invalidateCache();
     } catch (err) {

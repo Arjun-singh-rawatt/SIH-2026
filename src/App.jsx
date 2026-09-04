@@ -17,6 +17,9 @@ import { Actions } from './pages/Actions';
 import { Facilities } from './pages/Facilities';
 import { FacilityDetails } from './pages/FacilityDetails';
 import { Settings } from './pages/Settings';
+import { ReportSafetyConcern } from './pages/ReportSafetyConcern';
+import { MyReports } from './pages/MyReports';
+import { FieldLifeSavingRules } from './pages/FieldLifeSavingRules';
 
 export function App() {
   return (
@@ -31,6 +34,9 @@ export function App() {
             {/* Authenticated Layout Shell */}
             <Route element={<AppShell />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/report" element={<ReportSafetyConcern />} />
+              <Route path="/my-reports" element={<MyReports />} />
+              <Route path="/field-life-saving-rules" element={<FieldLifeSavingRules />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/reports/:id" element={<ReportDetails />} />
               <Route path="/analyze" element={<AnalyzeReport />} />

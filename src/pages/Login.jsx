@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, ArrowRight, ChevronRight, BellRing, Clock3, FlaskConical } from 'lucide-react';
+import { Shield, AlertTriangle, ArrowRight, ChevronRight, BellRing } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Modal } from '../components/ui/Modal';
 
 export function Login() {
   const navigate = useNavigate();
   const { login, availableUsers } = useAuth();
-  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
-
   const safetyOfficerUser = availableUsers.find((user) => user.role === 'Safety Officer') || availableUsers[0];
 
   const handleAccessSystem = () => {
@@ -17,7 +14,8 @@ export function Login() {
   };
 
   const handleReportConcern = () => {
-    setIsProgressModalOpen(true);
+    login(safetyOfficerUser);
+    navigate('/report');
   };
 
   return (
@@ -168,50 +166,6 @@ export function Login() {
           <span>Oil India Limited | HSE Digital Initiative</span>
         </footer>
       </div>
-
-      <Modal
-        isOpen={isProgressModalOpen}
-        onClose={() => setIsProgressModalOpen(false)}
-        title="Feature under progress"
-        subtitle="The reporting workflow is being prepared with the same safety-first experience as the command center."
-        maxWidth="max-w-lg"
-      >
-        <div className="space-y-5">
-          <div className="flex items-start gap-4 rounded-[1.5rem] border border-amber-200 bg-[linear-gradient(180deg,#fffaf1_0%,#fff6e8_100%)] p-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
-              <Clock3 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-extrabold text-ink-primary">Field reporting is coming soon.</p>
-              <p className="mt-1 text-sm leading-6 text-ink-secondary">
-                For now, safety managers can continue through the command center while we finalize worker-side report submission.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-[#e6ddd0] bg-[#faf7f2] p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-ink-primary">
-              <FlaskConical className="h-4 w-4 text-[#0a5e46]" />
-              Planned in this workflow
-            </div>
-            <div className="space-y-2 text-sm text-ink-secondary">
-              <p>Guided issue capture for frontline teams.</p>
-              <p>Mobile-first submission with evidence attachments.</p>
-              <p>Direct routing into the SIF intelligence review pipeline.</p>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => setIsProgressModalOpen(false)}
-              className="inline-flex items-center rounded-full bg-[#0a5e46] px-5 py-3 text-sm font-extrabold tracking-[0.08em] text-white shadow-btn-emerald transition-transform hover:-translate-y-0.5"
-            >
-              Return to Home
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
