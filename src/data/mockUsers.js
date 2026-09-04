@@ -133,4 +133,4 @@ export const mockUsers = [
   }
 ];
 
-export const currentUserDefault = mockUsers[0]; // Alok Sharma, HSE Manager
+export const currentUserDefault = mockUsers.find((user) => user.role === 'Safety Officer') || mockUsers[0];

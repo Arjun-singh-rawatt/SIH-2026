@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('sift_auth_token') !== 'logged_out';
+    return localStorage.getItem('sift_auth_token') === 'valid_token';
   });
 
   useEffect(() => {

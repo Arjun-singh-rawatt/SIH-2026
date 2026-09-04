@@ -9,7 +9,7 @@ export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
