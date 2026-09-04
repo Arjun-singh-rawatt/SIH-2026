@@ -24,12 +24,12 @@ export function App() {
       <AuthProvider>
         <ReportsProvider>
           <Routes>
-            {/* Public Auth Route */}
+            {/* Public Landing Route */}
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
 
             {/* Authenticated Layout Shell */}
             <Route element={<AppShell />}>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/reports/:id" element={<ReportDetails />} />
@@ -45,7 +45,7 @@ export function App() {
             </Route>
 
             {/* Catch-all fallback */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ReportsProvider>
       </AuthProvider>
