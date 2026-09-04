@@ -1,5 +1,29 @@
 import { apiClient } from './api/apiClient';
 import { mapReportFromApi, mapReportToApi } from './api/mappers';
+import { demoReports } from '../data/demoReports';
+
+function matchesFilters(report, filters = {}) {
+  const search = filters.search?.trim().toLowerCase();
+  if (search && ![report.reportId, report.facilityName, report.primaryHazard, report.rawReportText]
+    .filter(Boolean)
+    .some((value) => value.toLowerCase().includes(search))) {
+    return false;
+  }
+  if (filters.facilityId && filters.facilityId !== 'ALL' && report.facilityId !== filters.facilityId) return false;
+  if (filters.region && filters.region !== 'ALL' && report.region !== filters.region) return false;
+  if (filters.reportType && filters.reportType !== 'ALL' && report.reportType !== filters.reportType) return false;
+  if (filters.sifPotential && filters.sifPotential !== 'ALL' && report.sifPotential !== filters.sifPotential) return false;
+  if (filters.reviewStatus && filters.reviewStatus !== 'ALL' && report.reviewStatus !== filters.reviewStatus) return false;
+  if (filters.activity && filters.activity !== 'ALL' && report.activity !== filters.activity) return false;
+  if (filters.lifeSavingRule && filters.lifeSavingRule !== 'ALL' && report.lifeSavingRule !== filters.lifeSavingRule) return false;
+  if (filters.urgencyLevel && filters.urgencyLevel !== 'ALL') {
+    const score = report.urgencyScore || 0;
+    if (filters.urgencyLevel === 'CRITICAL' && score < 90) return false;
+    if (filters.urgencyLevel === 'HIGH' && (score < 75 || score >= 90)) return false;
+    if (filters.urgencyLevel === 'MEDIUM' && (score < 50 || score >= 75)) return false;
+  }
+  return true;
+}
 
 export const reportService = {
   /**
@@ -24,15 +48,18 @@ export const reportService = {
 
     const response = await apiClient.get('/reports', queryParams);
     
-    // If response is paginated container
-    if (response && response.items) {
-      return response.items.map(mapReportFromApi);
-    }
-    // Fallback if direct array
-    if (Array.isArray(response)) {
-      return response.map(mapReportFromApi);
-    }
-    return [];
+    // Keep the MVP demo record visible until the backend has real report data.
+    const backendReports = response && response.items
+      ? response.items.map(mapReportFromApi)
+      : Array.isArray(response)
+        ? response.map(mapReportFromApi)
+        : [];
+    const backendReportIds = new Set(backendReports.map((report) => report.reportId));
+    const matchingDemoReports = demoReports.filter(
+      (report) => !backendReportIds.has(report.reportId) && matchesFilters(report, filters)
+    );
+
+    return [...matchingDemoReports, ...backendReports];
   },
 
   /**

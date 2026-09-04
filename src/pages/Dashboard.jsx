@@ -47,7 +47,7 @@ export function Dashboard() {
           facility: report.facilityName,
           riskType: report.primaryHazard,
           score: report.urgencyScore,
-          status: report.reviewStatus === 'PENDING' ? 'Investigate' : report.reviewStatus,
+          status: report.status || (report.reviewStatus === 'PENDING' ? 'Investigate' : report.reviewStatus),
         })),
     [reports]
   );
@@ -180,7 +180,7 @@ export function Dashboard() {
                     <td className="rounded-r-2xl px-3 py-3">
                       <span
                         className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${
-                          item.status === 'Investigate'
+                          item.status === 'Investigate' || item.status === 'Critical'
                             ? 'border-red-200 bg-red-50 text-red-900'
                             : 'border-emerald-200 bg-emerald-50 text-emerald-900'
                         }`}

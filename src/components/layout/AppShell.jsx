@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useAuth } from '../../context/AuthContext';
 
 export function AppShell() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
+  }
+
+  // The frontline reporting flow has its own deliberately focused field shell.
+  if (['/report', '/my-reports', '/field-life-saving-rules'].includes(location.pathname)) {
+    return <Outlet />;
   }
 
   return (
