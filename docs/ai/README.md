@@ -20,16 +20,42 @@ It eliminates ambiguity by formalizing:
 
 ## 2. Specification Document Map
 
+### 2.1 Architecture & Core Specs
 | Document | Purpose | Key Contents |
 | :--- | :--- | :--- |
-| [**SIFT_AI_DATA_SPEC.md**](SIFT_AI_DATA_SPEC.md) | **Master AI & Data Specification** | Problem formulation, core design principles, complete Task Registry (TASK-001 to TASK-013), and end-to-end architecture. |
-| [**TAXONOMY.md**](TAXONOMY.md) | **Canonical Taxonomies (v1.0)** | Controlled vocabularies for SIF Potential, SIF Precursors, Hazards, Activities, Life-Saving Rules, and Safety Barriers. |
-| [**ANNOTATION_GUIDELINES.md**](ANNOTATION_GUIDELINES.md) | **Human Annotation Protocol** | Standard operating procedures for annotators, double-blind adjudication, inclusion/exclusion rules, and span offset extraction. |
-| [**DATASET_SCHEMA.md**](DATASET_SCHEMA.md) | **Dataset & Record Specification** | Field-by-field JSONL schema dictionary, character-level offset constraints, and data validation rules. |
-| [**MODEL_SPECIFICATION.md**](MODEL_SPECIFICATION.md) | **Modeling Roadmap & Strategy** | Staged progression from classical NLP baselines to fine-tuned Transformers, structured LLMs, and Hybrid RAG pipelines. |
-| [**EVALUATION_PROTOCOL.md**](EVALUATION_PROTOCOL.md) | **Benchmarking & Metrics** | Task-by-task metrics, High-SIF recall prioritization, leakage-free split strategies, and mandatory False Negative root-cause analysis. |
-| [**INFERENCE_CONTRACT.md**](INFERENCE_CONTRACT.md) | **Runtime Serving & API Contract** | FastAPI request/response contracts, latency budgets, calibrated confidence, baseline heuristic urgency formulas, and auditability. |
-| [**DATA_VERSIONING.md**](DATA_VERSIONING.md) | **Data Lineage & Lifecycle** | Dataset naming conventions, taxonomy versioning policies, Model Card standards, and continuous retraining triggers. |
+| [**System Architecture**](../architecture/ARCHITECTURE.md) | **System Topology** | Full-stack platform blueprint, services, database, and ML interaction. |
+| [**SIFT_AI_DATA_SPEC.md**](../architecture/SIFT_AI_DATA_SPEC.md) | **Master AI & Data Specification** | Problem formulation, core design principles, complete Task Registry (TASK-001 to TASK-013), and end-to-end architecture. |
+
+### 2.2 Datasets & Taxonomies (`docs/ai/datasets/`)
+| Document | Purpose | Key Contents |
+| :--- | :--- | :--- |
+| [**TAXONOMY.md**](datasets/TAXONOMY.md) | **Canonical Taxonomies (v1.0)** | Controlled vocabularies for SIF Potential, SIF Precursors, Hazards, Activities, Life-Saving Rules, and Safety Barriers. |
+| [**DATASET_CARD.md**](datasets/DATASET_CARD.md) | **Dataset Card (v0.1.0)** | Demographic properties, label distributions, split proportions, and synthetic generation methodology. |
+| [**DATASET_SCHEMA.md**](datasets/DATASET_SCHEMA.md) | **Dataset & Record Specification** | Field-by-field JSONL schema dictionary, character-level offset constraints, and data validation rules. |
+| [**ANNOTATION_GUIDELINES.md**](datasets/ANNOTATION_GUIDELINES.md) | **Human Annotation Protocol** | Standard operating procedures for annotators, double-blind adjudication, inclusion/exclusion rules, and span offset extraction. |
+| [**DATA_ACQUISITION.md**](datasets/DATA_ACQUISITION.md) | **Source Ingestion & Registry** | Guidelines for frontline report ingestion, source registration, and deduplication. |
+| [**DATA_VERSIONING.md**](datasets/DATA_VERSIONING.md) | **Data Lineage & Lifecycle** | Dataset naming conventions, taxonomy versioning policies, Model Card standards, and continuous retraining triggers. |
+
+### 2.3 Models & Inference (`docs/ai/models/`)
+| Document | Purpose | Key Contents |
+| :--- | :--- | :--- |
+| [**MODEL_SPECIFICATION.md**](models/MODEL_SPECIFICATION.md) | **Modeling Roadmap & Strategy** | Staged progression from classical NLP baselines to fine-tuned Transformers, structured LLMs, and Hybrid RAG pipelines. |
+| [**INFERENCE_CONTRACT.md**](models/INFERENCE_CONTRACT.md) | **Runtime Serving & API Contract** | FastAPI request/response contracts, latency budgets, calibrated confidence, baseline heuristic urgency formulas, and auditability. |
+| [**TASK_001_BASELINE.md**](models/TASK_001_BASELINE.md) | **Stage 1 Baseline Runbook** | TF-IDF + Logistic Regression / SVM baseline training, evaluation, and inference. |
+| [**TASK_001_TRANSFORMER.md**](models/TASK_001_TRANSFORMER.md) | **Stage 2 Transformer Benchmark** | Fine-tuned DistilBERT transformer encoder benchmark, tokenizer, and comparative evaluation. |
+| [**TASK_001_SIF_CLASSIFIER_MODEL_CARD.md**](models/TASK_001_SIF_CLASSIFIER_MODEL_CARD.md) | **Baseline Model Card** | Metadata, operational limits, evaluation performance, and ethics review for classical baseline. |
+| [**TASK_001_TRANSFORMER_MODEL_CARD.md**](models/TASK_001_TRANSFORMER_MODEL_CARD.md) | **Transformer Model Card** | Model card for fine-tuned transformer classifier checkpoint. |
+
+### 2.4 Pipelines & Workflows (`docs/ai/pipelines/`)
+| Document | Purpose | Key Contents |
+| :--- | :--- | :--- |
+| [**DATA_PIPELINE.md**](pipelines/DATA_PIPELINE.md) | **Data Pipeline Specification** | Ingestion, sanitization, governance, deduplication, and split generation architecture. |
+| [**REAL_DATA_WORKFLOW.md**](pipelines/REAL_DATA_WORKFLOW.md) | **Operational Annotation Workflow** | End-to-end lifecycle for double-blind human annotation, adjudication, and dataset release gates. |
+
+### 2.5 Experiments & Benchmarks (`docs/experiments/`)
+| Document | Purpose | Key Contents |
+| :--- | :--- | :--- |
+| [**EVALUATION_PROTOCOL.md**](../experiments/EVALUATION_PROTOCOL.md) | **Benchmarking & Metrics** | Task-by-task metrics, High-SIF recall prioritization, leakage-free split strategies, and mandatory False Negative root-cause analysis. |
 
 ---
 

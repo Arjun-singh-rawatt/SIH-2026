@@ -1,0 +1,40 @@
+{
+  "task": "TASK-001",
+  "dataset_version": "0.1.0",
+  "is_demo_dataset": true,
+  "test_sample_count": 2,
+  "classical_model_name": "LogisticRegression(class_weight=None, C=1.0)",
+  "transformer_model_name": "distilbert-base-uncased",
+  "classical_accuracy": 0.0,
+  "classical_macro_f1": 0.0,
+  "classical_high_sif_recall": 0.0,
+  "transformer_accuracy": 0.5,
+  "transformer_macro_f1": 0.3333,
+  "transformer_high_sif_recall": 0.0,
+  "both_correct_count": 0,
+  "classical_only_count": 0,
+  "transformer_only_count": 1,
+  "both_wrong_count": 1,
+  "records": [
+    {
+      "report_id": "SIF-2026-00004",
+      "raw_text": "During routine housekeeping in workshop, empty cardboard boxes were found stacked near the emergency exit corridor. Clea...",
+      "actual_label": "NON-SIF",
+      "classical_prediction": "CRITICAL",
+      "transformer_prediction": "LOW",
+      "classical_correct": false,
+      "transformer_correct": false,
+      "category": "BOTH_WRONG"
+    },
+    {
+      "report_id": "SIF-2026-00005",
+      "raw_text": "Mechanic technician suffered minor skin abrasion while tightening grease nipple on pump skid. Cleaned and dressed at Fir...",
+      "actual_label": "LOW",
+      "classical_prediction": "CRITICAL",
+      "transformer_prediction": "LOW",
+      "classical_correct": false,
+      "transformer_correct": true,
+      "category": "TRANSFORMER_ONLY"
+    }
+  ]
+}

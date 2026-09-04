@@ -1,0 +1,129 @@
+{
+  "experiment_id": "exp-task001-transformer-20260904-121556",
+  "task": "TASK-001",
+  "dataset_version": "0.1.0",
+  "is_demo_dataset": true,
+  "model_type": "Transformer(distilbert-base-uncased)",
+  "feature_type": "Pretrained Contextual Embeddings (max_seq_len=128)",
+  "hyperparameters": {
+    "base_model": "distilbert-base-uncased",
+    "epochs": 1,
+    "batch_size": 8,
+    "learning_rate": 0.00002,
+    "max_length": 128,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "random_seed": 42,
+    "use_class_weights": true,
+    "selection_metric": "0.6*HighSIFRecall + 0.4*MacroF1"
+  },
+  "training_timestamp": "2026-09-04T12:16:23.773331+00:00",
+  "random_seed": 42,
+  "environment": {
+    "python_version": "3.12.4",
+    "torch_version": "2.14.0",
+    "transformers_version": "5.16.1",
+    "device": "mps",
+    "platform": "darwin"
+  },
+  "validation_metrics": {
+    "total_samples": 3,
+    "accuracy": 0.0,
+    "macro_precision": 0.0,
+    "macro_recall": 0.0,
+    "macro_f1": 0.0,
+    "weighted_f1": 0.0,
+    "high_sif_recall": 0.3333,
+    "high_sif_support": 3,
+    "high_sif_correct": 1,
+    "per_class_metrics": [
+      {
+        "class_name": "CRITICAL",
+        "support": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      {
+        "class_name": "HIGH",
+        "support": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      {
+        "class_name": "LOW",
+        "support": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      }
+    ],
+    "confusion_matrix_classes": [
+      "CRITICAL",
+      "HIGH",
+      "LOW"
+    ],
+    "confusion_matrix_grid": [
+      [
+        0,
+        0,
+        2
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "test_metrics": {
+    "total_samples": 2,
+    "accuracy": 0.5,
+    "macro_precision": 0.25,
+    "macro_recall": 0.5,
+    "macro_f1": 0.3333,
+    "weighted_f1": 0.3333,
+    "high_sif_recall": 0.0,
+    "high_sif_support": 0,
+    "high_sif_correct": 0,
+    "per_class_metrics": [
+      {
+        "class_name": "LOW",
+        "support": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1_score": 0.6667
+      },
+      {
+        "class_name": "NON-SIF",
+        "support": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      }
+    ],
+    "confusion_matrix_classes": [
+      "LOW",
+      "NON-SIF"
+    ],
+    "confusion_matrix_grid": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ]
+  },
+  "model_artifact_path": "models/task_001/transformer/sift-task-001-transformer-v0.1.0",
+  "status": "COMPLETED",
+  "notes": "DEMO / PIPELINE VALIDATION ONLY"
+}

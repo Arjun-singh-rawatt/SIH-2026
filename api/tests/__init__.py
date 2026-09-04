@@ -1,1 +1,0 @@
-"""SIFT Test Suite Package."""

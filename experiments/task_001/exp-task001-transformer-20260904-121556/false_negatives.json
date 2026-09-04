@@ -1,0 +1,7 @@
+{
+  "total_samples": 2,
+  "total_misclassifications": 1,
+  "total_high_sif_false_negatives": 0,
+  "high_sif_fn_breakdown": {},
+  "false_negative_records": []
+}

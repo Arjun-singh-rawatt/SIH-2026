@@ -4,7 +4,7 @@
 Evaluates a saved .joblib model artifact against any test split without retraining.
 
 Usage:
-    python -m ml.task_001.evaluate --model models/task_001/sift-task-001-baseline-v0.1.0.joblib --test data/splits/test.jsonl
+    python -m ml.task_001.evaluate --model models/task_001/baseline/sift-task-001-baseline-v0.1.0.joblib --test data/splits/test.jsonl
 """
 
 import argparse

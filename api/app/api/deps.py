@@ -118,3 +118,44 @@ def get_user_service(
     user_repo: Annotated[UserRepository, Depends(get_user_repo)],
 ) -> UserService:
     return UserService(user_repo=user_repo)
+
+from app.db.repositories.annotation_repo import AnnotationRepository
+from app.services.annotation_service import AnnotationService
+from fastapi import Header
+from app.db.models.user import User
+from typing import Optional
+
+def get_annotation_repo(db: DBSession) -> AnnotationRepository:
+    return AnnotationRepository(db)
+
+def get_annotation_service(
+    annotation_repo: Annotated[AnnotationRepository, Depends(get_annotation_repo)],
+    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+) -> AnnotationService:
+    return AnnotationService(annotation_repo=annotation_repo, report_repo=report_repo)
+
+async def get_current_user(
+    x_user_id: Annotated[Optional[str], Header(alias="X-User-Id")] = None,
+    user_repo: Annotated[UserRepository, Depends(get_user_repo)] = None,
+) -> User:
+    """Resolve active user identity from X-User-Id header (Development identity mechanism)."""
+    user_id = x_user_id or "USR-001"
+    user = await user_repo.get_by_user_id(user_id)
+    if not user:
+        if x_user_id:
+            return User(
+                user_id=x_user_id,
+                name=f"User {x_user_id}",
+                email=f"{x_user_id.lower()}@oilindia.in",
+                role="Observer",
+            )
+        users = await user_repo.get_all()
+        if users:
+            return users[0]
+        return User(
+            user_id=user_id,
+            name="Alok Sharma",
+            email="alok.sharma@oilindia.in",
+            role="HSE Manager",
+        )
+    return user

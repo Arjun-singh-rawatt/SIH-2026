@@ -1,0 +1,22 @@
+{
+  "model_version": "sift-task-001-transformer-v0.1.0",
+  "taxonomy_version": "1.0",
+  "model_family": "transformer",
+  "base_model": "distilbert-base-uncased",
+  "max_length": 128,
+  "num_parameters": 66957317,
+  "saved_at": "2026-09-04T12:16:45.296921+00:00",
+  "metadata": {
+    "experiment_id": "exp-task001-transformer-20260904-121640",
+    "dataset_version": "0.1.0",
+    "base_model": "distilbert-base-uncased",
+    "max_length": 128,
+    "learning_rate": 2e-05,
+    "batch_size": 8,
+    "epochs": 3,
+    "device": "mps",
+    "use_class_weights": true,
+    "is_demo": true,
+    "trained_at": "2026-09-04T12:16:45.115323+00:00"
+  }
+}

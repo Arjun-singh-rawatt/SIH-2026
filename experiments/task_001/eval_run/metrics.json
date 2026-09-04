@@ -1,0 +1,73 @@
+{
+  "total_samples": 2,
+  "accuracy": 0.0,
+  "macro_precision": 0.0,
+  "macro_recall": 0.0,
+  "macro_f1": 0.0,
+  "weighted_f1": 0.0,
+  "high_sif_recall": 0.0,
+  "high_sif_support": 0,
+  "high_sif_correct": 0,
+  "per_class_metrics": [
+    {
+      "class_name": "CRITICAL",
+      "support": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    {
+      "class_name": "HIGH",
+      "support": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    {
+      "class_name": "LOW",
+      "support": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    {
+      "class_name": "NON-SIF",
+      "support": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    }
+  ],
+  "confusion_matrix_classes": [
+    "CRITICAL",
+    "HIGH",
+    "LOW",
+    "NON-SIF"
+  ],
+  "confusion_matrix_grid": [
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0
+    ]
+  ]
+}

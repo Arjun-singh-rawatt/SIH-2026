@@ -17,7 +17,7 @@ Frontline safety observations submitted across drilling rigs, production manifol
 $$\text{SIF Potential} \in \{\text{CRITICAL}, \text{HIGH}, \text{MEDIUM}, \text{LOW}, \text{NON-SIF}\}$$
 
 ### Safety-Critical Evaluation Floor
-In industrial operations, missing a fatal precursor scenario carries catastrophic consequences. Therefore, per `docs/ai/EVALUATION_PROTOCOL.md`:
+In industrial operations, missing a fatal precursor scenario carries catastrophic consequences. Therefore, per `docs/experiments/EVALUATION_PROTOCOL.md`:
 $$\text{Primary Operational Metric: } \text{Recall}_{\text{SIF} \in \{\text{CRITICAL}, \text{HIGH}\}} \ge 0.95 \text{ (95.0\%)}$$
 $$\text{Secondary Metric: } \text{Macro } F_1 \ge 0.88$$
 
@@ -94,7 +94,7 @@ python -m ml.task_001.train \
     --test data/splits/sift_dataset_v1.0.0_test.jsonl \
     --dataset-version 1.0.0 \
     --output-dir experiments/task_001 \
-    --model-output models/task_001 \
+    --model-output models/task_001/baseline \
     --seed 42
 ```
 
@@ -102,7 +102,7 @@ python -m ml.task_001.train \
 Evaluate any serialized `.joblib` model artifact on a test partition without retraining:
 ```bash
 python -m ml.task_001.evaluate \
-    --model models/task_001/sift-task-001-baseline-v1.0.0.joblib \
+    --model models/task_001/baseline/sift-task-001-baseline-v1.0.0.joblib \
     --test data/splits/sift_dataset_v1.0.0_test.jsonl \
     --output-dir experiments/task_001/eval_run
 ```
@@ -115,7 +115,7 @@ python -m ml.task_001.evaluate \
 from ml.task_001.inference import SIFClassifier
 
 # Load serialized model pipeline
-classifier = SIFClassifier.load("models/task_001/sift-task-001-baseline-v1.0.0.joblib")
+classifier = SIFClassifier.load("models/task_001/baseline/sift-task-001-baseline-v1.0.0.joblib")
 
 # Single prediction
 narrative = "While servicing bypass valve on Compressor #2, noticed 35 bar gas pressure was not isolated."

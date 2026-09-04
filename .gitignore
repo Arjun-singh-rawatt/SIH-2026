@@ -91,3 +91,9 @@ api/.venv/
 *.db
 *.sqlite3
 
+# Large ML Model Weight Binaries (>100MB)
+*.safetensors
+*.bin
+*.pt
+*.pth
+

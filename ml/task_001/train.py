@@ -40,7 +40,7 @@ def train_task_001_baseline(
     test_path: Optional[str] = None,
     dataset_version: str = "1.0.0",
     output_dir: str = "experiments/task_001",
-    model_output_dir: str = "models/task_001",
+    model_output_dir: str = "models/task_001/baseline",
     random_seed: int = 42,
     is_demo: bool = False,
 ) -> Tuple[SIFClassifier, Dict[str, Any]]:
@@ -224,7 +224,7 @@ def main():
     parser.add_argument("--test", help="Path to test split JSONL")
     parser.add_argument("--dataset-version", default="0.1.0", help="Dataset version string (default: 0.1.0)")
     parser.add_argument("--output-dir", "-o", default="experiments/task_001", help="Experiment outputs directory")
-    parser.add_argument("--model-output", "-m", default="models/task_001", help="Model artifact destination directory")
+    parser.add_argument("--model-output", "-m", default="models/task_001/baseline", help="Model artifact destination directory")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     parser.add_argument("--demo", action="store_true", help="Flag indicating training on synthetic demo data")
 

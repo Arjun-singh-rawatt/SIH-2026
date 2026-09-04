@@ -1,0 +1,26 @@
+{
+  "task": "TASK-001",
+  "task_description": "SIF Potential Classification (Stage 2 Pretrained Transformer)",
+  "dataset_version": "0.1.0",
+  "model": {
+    "base_model": "distilbert-base-uncased",
+    "num_labels": 5,
+    "max_length": 128,
+    "problem_type": "single_label_classification"
+  },
+  "training": {
+    "batch_size": 16,
+    "epochs": 5,
+    "learning_rate": 2e-5,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "gradient_accumulation_steps": 1,
+    "max_grad_norm": 1.0,
+    "use_class_weights": true,
+    "seed": 42
+  },
+  "paths": {
+    "model_output_dir": "models/task_001/transformer",
+    "experiment_output_dir": "experiments/task_001"
+  }
+}

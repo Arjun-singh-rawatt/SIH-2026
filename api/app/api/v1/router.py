@@ -12,6 +12,7 @@ from app.api.v1.endpoints import (
     facilities,
     actions,
     users,
+    annotations,
 )
 
 api_router = APIRouter()
@@ -26,3 +27,4 @@ api_router.include_router(life_saving_rules.router)
 api_router.include_router(facilities.router)
 api_router.include_router(actions.router)
 api_router.include_router(users.router)
+api_router.include_router(annotations.router)

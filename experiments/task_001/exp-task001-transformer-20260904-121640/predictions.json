@@ -1,0 +1,28 @@
+[
+  {
+    "report_id": "SIF-2026-00004",
+    "raw_text_excerpt": "During routine housekeeping in workshop, empty cardboard boxes were found stacked near the emergency...",
+    "actual_label": "NON-SIF",
+    "predicted_label": "HIGH",
+    "probabilities": {
+      "CRITICAL": 0.2043,
+      "HIGH": 0.2156,
+      "MEDIUM": 0.1867,
+      "LOW": 0.212,
+      "NON-SIF": 0.1814
+    }
+  },
+  {
+    "report_id": "SIF-2026-00005",
+    "raw_text_excerpt": "Mechanic technician suffered minor skin abrasion while tightening grease nipple on pump skid. Cleane...",
+    "actual_label": "LOW",
+    "predicted_label": "CRITICAL",
+    "probabilities": {
+      "CRITICAL": 0.2166,
+      "HIGH": 0.2074,
+      "MEDIUM": 0.184,
+      "LOW": 0.2105,
+      "NON-SIF": 0.1814
+    }
+  }
+]

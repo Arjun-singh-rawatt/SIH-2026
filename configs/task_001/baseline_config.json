@@ -1,0 +1,32 @@
+{
+  "task": "TASK-001",
+  "task_description": "SIF Potential Classification (Stage 1 Baseline)",
+  "dataset_version": "0.1.0",
+  "model_type": "TF-IDF + LogisticRegression / LinearSVC",
+  "features": {
+    "ngram_range": [1, 2],
+    "sublinear_tf": true,
+    "min_df": 1,
+    "max_features": 10000,
+    "strip_accents": "unicode",
+    "lowercase": true
+  },
+  "classifiers": {
+    "logistic_regression": {
+      "C": 1.0,
+      "max_iter": 1000,
+      "class_weight": "balanced",
+      "random_state": 42
+    },
+    "linear_svc": {
+      "C": 1.0,
+      "max_iter": 2000,
+      "class_weight": "balanced",
+      "random_state": 42
+    }
+  },
+  "paths": {
+    "model_output_dir": "models/task_001/baseline",
+    "experiment_output_dir": "experiments/task_001"
+  }
+}

@@ -44,7 +44,7 @@
 
 ## 4. Evaluation Benchmark & Performance Criteria
 
-Per `docs/ai/EVALUATION_PROTOCOL.md`:
+Per `docs/experiments/EVALUATION_PROTOCOL.md`:
 
 | Metric | Target Specification | Operational Rationale |
 | :--- | :--- | :--- |
@@ -70,7 +70,7 @@ Every model evaluation generates an automated False Negative audit capturing all
 
 ## 6. Artifact & Deployment Specifications
 
-- **Serialized Artifact:** `models/task_001/sift-task-001-baseline-v{VERSION}.joblib`
+- **Serialized Artifact:** `models/task_001/baseline/sift-task-001-baseline-v{VERSION}.joblib`
 - **Inference Wrapper:** `ml.task_001.inference.SIFClassifier`
 - **Output Schema:** `ml.task_001.schemas.SIFClassificationPrediction`
 - **Calibration Status:** Uncalibrated decision scores / probabilities (requires temperature scaling on validation set prior to production serving).
