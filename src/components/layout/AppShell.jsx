@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { useAuth } from '../../context/AuthContext';
 
 export function AppShell() {
-  const { isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -13,8 +13,15 @@ export function AppShell() {
     return <Navigate to="/" replace />;
   }
 
+  const fieldRoutes = ['/report', '/my-reports', '/field-life-saving-rules'];
+  const isManager = ['HSE Manager', 'Administrator'].includes(currentUser?.role);
+
+  if (!isManager && !fieldRoutes.includes(location.pathname)) {
+    return <Navigate to="/report" replace />;
+  }
+
   // The frontline reporting flow has its own deliberately focused field shell.
-  if (['/report', '/my-reports', '/field-life-saving-rules'].includes(location.pathname)) {
+  if (fieldRoutes.includes(location.pathname)) {
     return <Outlet />;
   }
 

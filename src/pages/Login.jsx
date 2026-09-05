@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, AlertTriangle, ArrowRight, ChevronRight, BellRing } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -7,15 +7,27 @@ export function Login() {
   const navigate = useNavigate();
   const { login, availableUsers } = useAuth();
   const safetyOfficerUser = availableUsers.find((user) => user.role === 'Safety Officer') || availableUsers[0];
+  const managerUser = availableUsers.find((user) => user.role === 'HSE Manager') || availableUsers[0];
+  const demoUserIds = ['USR-002', 'USR-008', 'USR-001'];
+  const demoUsers = demoUserIds
+    .map((userId) => availableUsers.find((user) => user.userId === userId))
+    .filter(Boolean);
+  const [selectedUserId, setSelectedUserId] = useState(safetyOfficerUser.userId);
 
   const handleAccessSystem = () => {
-    login(safetyOfficerUser);
+    login(managerUser);
     navigate('/dashboard');
   };
 
   const handleReportConcern = () => {
     login(safetyOfficerUser);
     navigate('/report');
+  };
+
+  const handleDemoAccess = () => {
+    const selectedUser = demoUsers.find((user) => user.userId === selectedUserId) || safetyOfficerUser;
+    login(selectedUser);
+    navigate(selectedUser.role === 'HSE Manager' ? '/dashboard' : '/report');
   };
 
   return (
@@ -69,6 +81,34 @@ export function Login() {
               <p className="mx-auto mt-2.5 max-w-[640px] text-[0.9rem] leading-5 text-ink-secondary md:text-[1rem]">
                 Turn safety observations into actionable SIF-risk intelligence.
               </p>
+            </div>
+
+            <div className="mx-auto mb-5 flex max-w-[860px] flex-col items-stretch gap-3 rounded-2xl border border-[#e4d7bd] bg-white/80 p-3 shadow-[0_10px_25px_rgba(15,79,67,0.05)] sm:flex-row sm:items-center sm:justify-between sm:p-3.5">
+              <div className="text-left">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f5e4b]">Demo access</p>
+                <p className="mt-1 text-xs text-ink-secondary">Choose a demo ID to show role-based access.</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <select
+                  value={selectedUserId}
+                  onChange={(event) => setSelectedUserId(event.target.value)}
+                  aria-label="Select demo user ID"
+                  className="rounded-xl border border-[#d8cdbb] bg-[#faf7f2] px-3 py-2 text-xs font-bold text-ink-primary outline-none focus:border-[#0a5e46]"
+                >
+                  {demoUsers.map((user) => (
+                    <option key={user.userId} value={user.userId}>
+                      {user.userId} - {user.name} ({user.role})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleDemoAccess}
+                  className="rounded-xl bg-[#0a5e46] px-4 py-2 text-xs font-extrabold tracking-[0.08em] text-white shadow-btn-emerald transition hover:bg-[#084b39]"
+                >
+                  CONTINUE AS SELECTED ID
+                </button>
+              </div>
             </div>
 
             <div className="mx-auto grid max-w-[860px] gap-5 md:grid-cols-2 lg:gap-6">
