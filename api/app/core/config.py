@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./sift.db"
     DB_ECHO: bool = False
+    
+    # MongoDB
+    MONGODB_URI: str = "mongodb://localhost:27017"
+    MONGODB_DATABASE: str = "sift_dev"
 
     # Security
     SECRET_KEY: str = "sift-super-secret-key-change-in-production-2026-oil-india"

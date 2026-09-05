@@ -1,8 +1,8 @@
-"""Safety Intelligence and Semantic Similarity search service."""
+"""Safety Intelligence and Semantic Similarity search service (MongoDB backed)."""
 
 from typing import List, Optional
 from app.db.repositories.pattern_repo import PatternRepository
-from app.db.repositories.report_repo import ReportRepository
+from app.db.repositories.mongo_report_repo import MongoReportRepository
 from app.vector.base import VectorStore, EmbeddingProvider
 from app.schemas.intelligence import (
     PatternRead,
@@ -12,13 +12,14 @@ from app.schemas.intelligence import (
 )
 from app.utils.filters import PatternFilterParams
 from app.core.errors import PatternNotFoundException, ReportNotFoundException
+from app.utils.enums import SIFPotential
 
 
 class IntelligenceService:
     def __init__(
         self,
         pattern_repo: PatternRepository,
-        report_repo: ReportRepository,
+        report_repo: MongoReportRepository,
         vector_store: VectorStore,
         embedding_provider: EmbeddingProvider,
     ):
@@ -74,7 +75,7 @@ class IntelligenceService:
             rep = await self.report_repo.get_by_identifier(report_identifier)
             if not rep:
                 raise ReportNotFoundException(report_identifier)
-            target_text = rep.raw_report_text
+            target_text = rep.get("raw_report_text", "")
 
         if not target_text:
             return SimilarReportsResponse(
@@ -101,17 +102,17 @@ class IntelligenceService:
             # Hydrate from database if available
             db_rep = await self.report_repo.get_by_identifier(rep_id)
             if db_rep:
-                fac_name = db_rep.facility.short_name if db_rep.facility else db_rep.facility_id
-                snippet = db_rep.raw_report_text[:120] + "..." if len(db_rep.raw_report_text) > 120 else db_rep.raw_report_text
+                fac_name = db_rep.get("metadata", {}).get("facility_name", db_rep.get("metadata", {}).get("facility_id", ""))
+                snippet = db_rep.get("raw_report_text", "")[:120] + "..." if len(db_rep.get("raw_report_text", "")) > 120 else db_rep.get("raw_report_text", "")
                 matches.append(
                     SimilarReportMatch(
-                        report_id=db_rep.report_id,
+                        report_id=db_rep.get("report_id", ""),
                         similarity=vm.score,
-                        precursor_category=db_rep.ai_precursor_category,
+                        precursor_category=db_rep.get("analysis", {}).get("precursor_category", ""),
                         facility_name=fac_name,
-                        primary_hazard=db_rep.ai_primary_hazard,
-                        life_saving_rule=db_rep.effective_life_saving_rule,
-                        sif_potential=db_rep.effective_sif_potential,
+                        primary_hazard=db_rep.get("analysis", {}).get("hazard", ""),
+                        life_saving_rule=db_rep.get("review", {}).get("final_life_saving_rule") or db_rep.get("analysis", {}).get("life_saving_rule", ""),
+                        sif_potential=db_rep.get("review", {}).get("final_sif_potential") or db_rep.get("analysis", {}).get("sif_potential", ""),
                         raw_snippet=snippet,
                     )
                 )
@@ -127,18 +128,18 @@ class IntelligenceService:
                     page_params=PageParams(page=1, page_size=20),
                 )
                 for cand in candidates[:top_k]:
-                    if cand.report_id != source_rep.report_id:
-                        fac_name = cand.facility.short_name if cand.facility else cand.facility_id
+                    if cand.get("report_id") != source_rep.get("report_id"):
+                        fac_name = cand.get("metadata", {}).get("facility_name", cand.get("metadata", {}).get("facility_id", ""))
                         matches.append(
                             SimilarReportMatch(
-                                report_id=cand.report_id,
+                                report_id=cand.get("report_id", ""),
                                 similarity=0.91,
-                                precursor_category=cand.ai_precursor_category,
+                                precursor_category=cand.get("analysis", {}).get("precursor_category", ""),
                                 facility_name=fac_name,
-                                primary_hazard=cand.ai_primary_hazard,
-                                life_saving_rule=cand.effective_life_saving_rule,
-                                sif_potential=cand.effective_sif_potential,
-                                raw_snippet=cand.raw_report_text[:120] + "...",
+                                primary_hazard=cand.get("analysis", {}).get("hazard", ""),
+                                life_saving_rule=cand.get("review", {}).get("final_life_saving_rule") or cand.get("analysis", {}).get("life_saving_rule", ""),
+                                sif_potential=cand.get("review", {}).get("final_sif_potential") or cand.get("analysis", {}).get("sif_potential", ""),
+                                raw_snippet=cand.get("raw_report_text", "")[:120] + "...",
                             )
                         )
 

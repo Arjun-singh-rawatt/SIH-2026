@@ -4,7 +4,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.db.repositories.report_repo import ReportRepository
+from app.db.repositories.mongo_report_repo import MongoReportRepository
+from app.db.mongodb import get_mongo_db
 from app.db.repositories.facility_repo import FacilityRepository
 from app.db.repositories.action_repo import ActionRepository
 from app.db.repositories.user_repo import UserRepository
@@ -26,8 +27,8 @@ from app.services.user_service import UserService
 DBSession = Annotated[AsyncSession, Depends(get_db)]
 
 # Repositories
-def get_report_repo(db: DBSession) -> ReportRepository:
-    return ReportRepository(db)
+def get_report_repo() -> MongoReportRepository:
+    return MongoReportRepository(get_mongo_db())
 
 def get_facility_repo(db: DBSession) -> FacilityRepository:
     return FacilityRepository(db)
@@ -51,7 +52,7 @@ def get_analysis_service(
     return AnalysisService(ai_provider or get_ai_provider())
 
 def get_report_service(
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
     facility_repo: Annotated[FacilityRepository, Depends(get_facility_repo)],
     analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
 ) -> ReportService:
@@ -64,13 +65,13 @@ def get_report_service(
     )
 
 def get_review_service(
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
     report_service: Annotated[ReportService, Depends(get_report_service)],
 ) -> ReviewService:
     return ReviewService(report_repo=report_repo, report_service=report_service)
 
 def get_dashboard_service(
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
     facility_repo: Annotated[FacilityRepository, Depends(get_facility_repo)],
     action_repo: Annotated[ActionRepository, Depends(get_action_repo)],
 ) -> DashboardService:
@@ -87,7 +88,7 @@ def get_facility_service(
 
 def get_action_service(
     action_repo: Annotated[ActionRepository, Depends(get_action_repo)],
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
     user_repo: Annotated[UserRepository, Depends(get_user_repo)],
     facility_repo: Annotated[FacilityRepository, Depends(get_facility_repo)],
 ) -> ActionService:
@@ -100,7 +101,7 @@ def get_action_service(
 
 def get_intelligence_service(
     pattern_repo: Annotated[PatternRepository, Depends(get_pattern_repo)],
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
 ) -> IntelligenceService:
     return IntelligenceService(
         pattern_repo=pattern_repo,
@@ -110,7 +111,7 @@ def get_intelligence_service(
     )
 
 def get_life_saving_rule_service(
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
 ) -> LifeSavingRuleService:
     return LifeSavingRuleService(report_repo=report_repo)
 
@@ -130,7 +131,7 @@ def get_annotation_repo(db: DBSession) -> AnnotationRepository:
 
 def get_annotation_service(
     annotation_repo: Annotated[AnnotationRepository, Depends(get_annotation_repo)],
-    report_repo: Annotated[ReportRepository, Depends(get_report_repo)],
+    report_repo: Annotated[MongoReportRepository, Depends(get_report_repo)],
 ) -> AnnotationService:
     return AnnotationService(annotation_repo=annotation_repo, report_repo=report_repo)
 

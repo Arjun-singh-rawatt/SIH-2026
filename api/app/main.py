@@ -13,6 +13,7 @@ from app.core.errors import SIFTException
 from app.db.base import Base
 from app.db.session import engine
 import app.db.models  # Register all models
+from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.api.v1.router import api_router
 from app.api.v1.endpoints import health
 
@@ -29,10 +30,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Initialized local SQLite database schema.")
 
+    # Initialize MongoDB Connection
+    await connect_to_mongo()
+
     yield
 
     logger.info("Shutting down SIFT Backend.")
     await engine.dispose()
+    await close_mongo_connection()
 
 
 def create_application() -> FastAPI:

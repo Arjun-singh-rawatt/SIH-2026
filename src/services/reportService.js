@@ -30,30 +30,39 @@ export const reportService = {
    * Fetch paginated list of safety reports with filtering, searching, and sorting
    */
   async getReports(filters = {}, page = 1, pageSize = 100) {
-    const queryParams = {
-      page,
-      page_size: pageSize,
-      search: filters.search,
-      facility_id: filters.facilityId,
-      region: filters.region,
-      report_type: filters.reportType,
-      sif_potential: filters.sifPotential,
-      urgency_level: filters.urgencyLevel,
-      life_saving_rule: filters.lifeSavingRule,
-      review_status: filters.reviewStatus,
-      activity: filters.activity,
-      sort_by: filters.sortBy === 'createdAt' ? 'created_at' : (filters.sortBy === 'urgencyScore' ? 'ai_urgency_score' : filters.sortBy),
-      sort_order: filters.sortOrder || 'desc',
-    };
-
-    const response = await apiClient.get('/reports', queryParams);
+    const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
     
-    // Keep the MVP demo record visible until the backend has real report data.
-    const backendReports = response && response.items
-      ? response.items.map(mapReportFromApi)
-      : Array.isArray(response)
-        ? response.map(mapReportFromApi)
-        : [];
+    let backendReports = [];
+    if (!isDemo) {
+      try {
+        const queryParams = {
+          page,
+          page_size: pageSize,
+          search: filters.search,
+          facility_id: filters.facilityId,
+          region: filters.region,
+          report_type: filters.reportType,
+          sif_potential: filters.sifPotential,
+          urgency_level: filters.urgencyLevel,
+          life_saving_rule: filters.lifeSavingRule,
+          review_status: filters.reviewStatus,
+          activity: filters.activity,
+          sort_by: filters.sortBy === 'createdAt' ? 'created_at' : (filters.sortBy === 'urgencyScore' ? 'ai_urgency_score' : filters.sortBy),
+          sort_order: filters.sortOrder || 'desc',
+        };
+
+        const response = await apiClient.get('/reports', queryParams);
+        
+        backendReports = response && response.items
+          ? response.items.map(mapReportFromApi)
+          : Array.isArray(response)
+            ? response.map(mapReportFromApi)
+            : [];
+      } catch (error) {
+        console.warn('Backend API failed, falling back to local demo data.', error);
+      }
+    }
+
     const backendReportIds = new Set(backendReports.map((report) => report.reportId));
     const matchingDemoReports = demoReports.filter(
       (report) => !backendReportIds.has(report.reportId) && matchesFilters(report, filters)
@@ -67,23 +76,43 @@ export const reportService = {
    */
   async getReportById(id) {
     if (!id) return null;
-    const response = await apiClient.get(`/reports/${id}`);
-    return mapReportFromApi(response);
+    const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (isDemo || id.toLowerCase().includes('demo')) {
+      const report = demoReports.find((r) => r.reportId === id || r.id === id);
+      if (report) return report;
+    }
+    
+    try {
+      const response = await apiClient.get(`/reports/${id}`);
+      return mapReportFromApi(response);
+    } catch (error) {
+      console.warn('Backend API failed, fallback to local demo data.', error);
+      return demoReports.find((r) => r.reportId === id || r.id === id) || null;
+    }
   },
 
   /**
    * Fetch aggregate statistics across all reports
    */
   async getReportStats() {
-    const response = await apiClient.get('/reports/stats');
-    return {
-      total: response.total_count,
-      sifCount: response.sif_count,
-      sifPercentage: response.sif_density,
-      criticalCount: response.high_urgency_count,
-      pendingReviewCount: response.pending_review_count,
-      avgConfidence: 94,
-    };
+    const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (isDemo) {
+      return this.getReportStatsFromList(demoReports);
+    }
+    try {
+      const response = await apiClient.get('/reports/stats');
+      return {
+        total: response.total_count,
+        sifCount: response.sif_count,
+        sifPercentage: response.sif_density,
+        criticalCount: response.high_urgency_count,
+        pendingReviewCount: response.pending_review_count,
+        avgConfidence: 94,
+      };
+    } catch (error) {
+      console.warn('Backend API failed for getReportStats. Using demo data.');
+      return this.getReportStatsFromList(demoReports);
+    }
   },
 
   /**
@@ -114,28 +143,62 @@ export const reportService = {
    * Fetch human-in-the-loop review queue items
    */
   async getReviewQueue(tab = 'PENDING', page = 1, pageSize = 50) {
-    const response = await apiClient.get('/reviews/queue', {
-      tab,
-      page,
-      page_size: pageSize,
-    });
-    if (response && response.items) {
-      return response.items.map(mapReportFromApi);
+    const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (isDemo) {
+      return demoReports.filter((r) => r.reviewStatus === (tab === 'PENDING' ? 'PENDING_REVIEW' : tab)).slice(0, 5);
     }
-    return [];
+
+    try {
+      const response = await apiClient.get('/reviews/queue', {
+        tab,
+        page,
+        page_size: pageSize,
+      });
+      if (response && response.items) {
+        return response.items.map(mapReportFromApi);
+      }
+      return [];
+    } catch (error) {
+      console.warn('Backend API failed for review queue. Using demo data.');
+      return demoReports.filter((r) => r.reviewStatus === (tab === 'PENDING' ? 'PENDING_REVIEW' : tab)).slice(0, 5);
+    }
   },
 
   /**
    * Fetch review queue summary counters
    */
   async getReviewSummary() {
-    const response = await apiClient.get('/reviews/summary');
-    return {
-      pendingCount: response.pending_count,
-      criticalCount: response.critical_count,
-      lowConfidenceCount: response.low_confidence_count,
-      totalCount: response.total_count,
-    };
+    const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    if (isDemo) {
+      const pendingCount = demoReports.filter(r => r.reviewStatus === 'PENDING_REVIEW').length;
+      const criticalCount = demoReports.filter(r => r.reviewStatus === 'PENDING_REVIEW' && r.sifPotential === 'CRITICAL').length;
+      return {
+        pendingCount,
+        criticalCount,
+        lowConfidenceCount: 0,
+        totalCount: demoReports.length,
+      };
+    }
+    
+    try {
+      const response = await apiClient.get('/reviews/summary');
+      return {
+        pendingCount: response.pending_count,
+        criticalCount: response.critical_count,
+        lowConfidenceCount: response.low_confidence_count,
+        totalCount: response.total_count,
+      };
+    } catch (error) {
+      console.warn('Backend API failed for getReviewSummary. Using demo data.');
+      const pendingCount = demoReports.filter(r => r.reviewStatus === 'PENDING_REVIEW').length;
+      const criticalCount = demoReports.filter(r => r.reviewStatus === 'PENDING_REVIEW' && r.sifPotential === 'CRITICAL').length;
+      return {
+        pendingCount,
+        criticalCount,
+        lowConfidenceCount: 0,
+        totalCount: demoReports.length,
+      };
+    }
   },
 
   /**
