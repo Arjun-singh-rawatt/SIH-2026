@@ -4,7 +4,7 @@
  * URL query serialization, and normalized error contracts.
  */
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').replace(/\/+$/, '');
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/+$/, '');
 
 class ApiError extends Error {
   constructor(status, code, message, details = null) {

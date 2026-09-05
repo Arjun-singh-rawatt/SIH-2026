@@ -7,7 +7,7 @@ import { demoReports } from '../data/demoReports';
 const ReportsContext = createContext(null);
 
 export function ReportsProvider({ children }) {
-  const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState(demoReports);
   const [actions, setActions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,15 +17,19 @@ export function ReportsProvider({ children }) {
     try {
       setIsLoading(true);
       setError(null);
-      const [fetchedReports, fetchedActions] = await Promise.all([
+      const [reportsResult, actionsResult] = await Promise.allSettled([
         reportService.getReports({}, 1, 100),
         actionService.getActions({}, 1, 100),
       ]);
+
+      const fetchedReports = reportsResult.status === 'fulfilled' ? reportsResult.value : [];
+      const fetchedActions = actionsResult.status === 'fulfilled' ? actionsResult.value : [];
       const fetchedReportIds = new Set(fetchedReports.map((report) => report.reportId));
       const reportsWithDemoData = [
         ...demoReports.filter((report) => !fetchedReportIds.has(report.reportId)),
         ...fetchedReports,
       ];
+
       setReports(reportsWithDemoData);
       setActions(fetchedActions);
       analyticsService.invalidateCache();

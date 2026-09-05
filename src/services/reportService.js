@@ -46,14 +46,19 @@ export const reportService = {
       sort_order: filters.sortOrder || 'desc',
     };
 
-    const response = await apiClient.get('/reports', queryParams);
-    
-    // Keep the MVP demo record visible until the backend has real report data.
-    const backendReports = response && response.items
-      ? response.items.map(mapReportFromApi)
-      : Array.isArray(response)
-        ? response.map(mapReportFromApi)
-        : [];
+    let backendReports = [];
+    try {
+      const response = await apiClient.get('/reports', queryParams);
+      backendReports = response && response.items
+        ? response.items.map(mapReportFromApi)
+        : Array.isArray(response)
+          ? response.map(mapReportFromApi)
+          : [];
+    } catch (error) {
+      console.warn('Reports API unavailable; using local demo reports.', error);
+    }
+
+    // Keep the provided demo records visible until the backend has real report data.
     const backendReportIds = new Set(backendReports.map((report) => report.reportId));
     const matchingDemoReports = demoReports.filter(
       (report) => !backendReportIds.has(report.reportId) && matchesFilters(report, filters)
