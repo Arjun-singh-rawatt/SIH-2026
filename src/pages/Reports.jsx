@@ -86,8 +86,12 @@ export function Reports() {
       }
     }
     filterData();
+    // A worker may submit from a different device/tab. Refresh the HSE queue
+    // without requiring the manager to reload the page.
+    const refreshTimer = window.setInterval(filterData, 5000);
     return () => {
       isMounted = false;
+      window.clearInterval(refreshTimer);
     };
   }, [filters, lastUpdated]);
 

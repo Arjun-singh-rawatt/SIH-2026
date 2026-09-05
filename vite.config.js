@@ -13,5 +13,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    // Keep local development convenient while production uses one FastAPI port.
+    proxy: {
+      '/api': 'http://localhost:8000',
+      '/health': 'http://localhost:8000',
+    },
   },
 });

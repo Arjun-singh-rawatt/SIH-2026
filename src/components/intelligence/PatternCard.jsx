@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp,
@@ -11,16 +11,78 @@ import {
   ArrowUpRight,
   ShieldCheck,
 } from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { SIFPotentialBadge } from '../ui/RiskBadge';
 import { ProgressBar } from '../ui/ProgressBar';
+import { useReportsContext } from '../../context/ReportsContext';
+
+const riskColors = {
+  Critical: '#991b1b',
+  High: '#c2410c',
+  Moderate: '#d97706',
+  Low: '#047857',
+};
+
+function riskBucket(value) {
+  if (value === 'CRITICAL') return 'Critical';
+  if (value === 'HIGH') return 'High';
+  if (value === 'MEDIUM') return 'Moderate';
+  return 'Low';
+}
 
 export function PatternCard({ pattern }) {
   const navigate = useNavigate();
+  const { reports } = useReportsContext();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isCritical = pattern.riskLevel === 'CRITICAL';
   const isUp = pattern.trendDirection === 'up';
+
+  const associatedReports = useMemo(() => {
+    const matchingReports = reports.filter(
+      (report) =>
+        report.precursorCategory === pattern.category &&
+        report.failedBarrier === pattern.commonBarrierFailure
+    );
+    if (matchingReports.length > 0) return matchingReports;
+    return reports.filter((report) => pattern.sampleReportIds?.includes(report.reportId));
+  }, [pattern.category, pattern.commonBarrierFailure, pattern.sampleReportIds, reports]);
+
+  const riskDistribution = useMemo(() => {
+    const counts = { Critical: 0, High: 0, Moderate: 0, Low: 0 };
+    associatedReports.forEach((report) => {
+      counts[riskBucket(report.sifPotential)] += 1;
+    });
+    return Object.entries(counts)
+      .filter(([, count]) => count > 0)
+      .map(([name, count]) => ({ name, count }));
+  }, [associatedReports]);
+
+  const occurrenceTrend = useMemo(() => {
+    const periods = new Map();
+    associatedReports.forEach((report) => {
+      if (!report.createdAt) return;
+      const date = new Date(report.createdAt);
+      if (Number.isNaN(date.getTime())) return;
+      const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+      const label = date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+      periods.set(key, { period: label, reports: (periods.get(key)?.reports || 0) + 1 });
+    });
+    return [...periods.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([, value]) => value);
+  }, [associatedReports]);
 
   return (
     <Card className="border-surface-border/80 shadow-spatial rounded-3.5xl transition-all duration-200">
@@ -120,6 +182,67 @@ export function PatternCard({ pattern }) {
             </span>
           </div>
           <p className="text-xs sm:text-sm font-extrabold text-ink-primary mt-1">{pattern.commonBarrierFailure}</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
+          <div className="rounded-2.5xl border border-surface-border/80 bg-[#FAF7F2] p-4 shadow-spatial-xs">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-ink-primary">Occurrence Trend</h4>
+                <p className="mt-1 text-[11px] text-ink-muted">Reports by recorded month</p>
+              </div>
+              <span className="text-[10px] font-bold text-ink-muted">{associatedReports.length} matched</span>
+            </div>
+            {occurrenceTrend.length < 2 ? (
+              <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-surface-border-strong bg-white/60 px-4 text-center text-xs text-ink-muted">
+                Not enough dated history for a trend.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={occurrenceTrend} margin={{ top: 4, right: 8, left: -22, bottom: 0 }}>
+                  <XAxis dataKey="period" tick={{ fontSize: 10, fill: '#857E74' }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#857E74' }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: '#E8E1D5', opacity: 0.45 }} contentStyle={{ borderRadius: 10, border: '1px solid #E8E1D5', fontSize: 12 }} />
+                  <Bar dataKey="reports" name="Reports" fill="#047857" radius={[5, 5, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="rounded-2.5xl border border-surface-border/80 bg-[#FAF7F2] p-4 shadow-spatial-xs">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-ink-primary">Risk Distribution</h4>
+                <p className="mt-1 text-[11px] text-ink-muted">Associated report severity</p>
+              </div>
+              <span className="text-[10px] font-bold text-ink-muted">{riskDistribution.reduce((total, item) => total + item.count, 0)} matched</span>
+            </div>
+            {riskDistribution.length === 0 ? (
+              <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-surface-border-strong bg-white/60 px-4 text-center text-xs text-ink-muted">
+                No associated report risk data available.
+              </div>
+            ) : (
+              <div className="flex h-40 items-center gap-3">
+                <ResponsiveContainer width="52%" height="100%">
+                  <PieChart>
+                    <Pie data={riskDistribution} dataKey="count" nameKey="name" innerRadius={38} outerRadius={62} paddingAngle={2}>
+                      {riskDistribution.map((entry) => <Cell key={entry.name} fill={riskColors[entry.name]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #E8E1D5', fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-2 text-[11px] font-bold text-ink-secondary">
+                  {riskDistribution.map((entry) => (
+                    <div key={entry.name} className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: riskColors[entry.name] }} />
+                      <span>{entry.name}</span>
+                      <span className="font-mono text-ink-primary">{entry.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Narrative Description */}
