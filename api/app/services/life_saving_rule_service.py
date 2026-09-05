@@ -1,17 +1,13 @@
-"""IOGP Life-Saving Rules directory and metric service."""
+"""IOGP Life-Saving Rules directory and metric service (MongoDB backed)."""
 
 from typing import List, Optional, Dict, Any
-from sqlalchemy import select, func, desc, or_, and_
-from sqlalchemy.orm import joinedload
-from app.db.repositories.report_repo import ReportRepository
-from app.db.models.safety_report import SafetyReport
-from app.db.models.facility import Facility
+from app.db.repositories.mongo_report_repo import MongoReportRepository
 from app.schemas.life_saving_rule import LifeSavingRuleRead, LifeSavingRuleDetail
 from app.schemas.report import ReportRead
 from app.utils.enums import SIFPotential
 from app.core.errors import LifeSavingRuleNotFoundException
+from datetime import datetime, timezone
 
-# Core IOGP Life-Saving Rules Directory Master Template
 LSR_CATALOG = [
     {
         "id": "LSR-01",
@@ -143,28 +139,13 @@ LSR_CATALOG = [
     },
 ]
 
-
 class LifeSavingRuleService:
-    def __init__(self, report_repo: ReportRepository):
+    def __init__(self, report_repo: MongoReportRepository):
         self.report_repo = report_repo
 
     async def list_rules(self) -> List[LifeSavingRuleRead]:
-        db = self.report_repo.db
-        
-        # Aggregate reports per rule
-        stmt = (
-            select(
-                SafetyReport.ai_life_saving_rule,
-                SafetyReport.final_life_saving_rule,
-                SafetyReport.ai_sif_potential,
-                SafetyReport.final_sif_potential,
-                SafetyReport.activity,
-                Facility.short_name,
-                Facility.name,
-            )
-            .join(Facility, SafetyReport.facility_id == Facility.facility_id, isouter=True)
-        )
-        rows = (await db.execute(stmt)).all()
+        cursor = self.report_repo.collection.find({})
+        rows = await cursor.to_list(length=1000)
 
         rule_stats: Dict[str, Dict[str, Any]] = {}
         for item in LSR_CATALOG:
@@ -175,10 +156,15 @@ class LifeSavingRuleService:
                 "facilities": {},
             }
 
-        for ai_lsr, final_lsr, ai_sif, final_sif, activity, fac_short, fac_name in rows:
-            lsr_name = final_lsr if final_lsr else ai_lsr
-            sif_val = final_sif if final_sif else ai_sif
-            fac = fac_short or fac_name or "OIL Field"
+        for report in rows:
+            analysis = report.get("analysis", {})
+            meta = report.get("metadata", {})
+            review = report.get("review", {})
+            
+            lsr_name = review.get("final_life_saving_rule") or analysis.get("life_saving_rule", "")
+            sif_val = review.get("final_sif_potential") or analysis.get("sif_potential", "")
+            fac = meta.get("facility_name", meta.get("facility_id", "OIL Field"))
+            activity = analysis.get("activity", "")
 
             for key in rule_stats:
                 if key.lower() in lsr_name.lower() or lsr_name.lower() in key.lower():
@@ -238,77 +224,82 @@ class LifeSavingRuleService:
             raise LifeSavingRuleNotFoundException(rule_identifier)
 
         # Fetch associated reports
-        db = self.report_repo.db
-        stmt = (
-            select(SafetyReport)
-            .options(
-                joinedload(SafetyReport.facility),
-                joinedload(SafetyReport.reporter),
-            )
-            .where(
-                or_(
-                    SafetyReport.final_life_saving_rule.ilike(f"%{target.name}%"),
-                    and_(
-                        SafetyReport.final_life_saving_rule.is_(None),
-                        SafetyReport.ai_life_saving_rule.ilike(f"%{target.name}%"),
-                    ),
-                )
-            )
-            .order_by(desc(SafetyReport.created_at))
-            .limit(10)
-        )
-        result = await db.execute(stmt)
-        reports = result.scalars().all()
+        cursor = self.report_repo.collection.find({
+            "$or": [
+                {"review.final_life_saving_rule": {"$regex": target.name, "$options": "i"}},
+                {"analysis.life_saving_rule": {"$regex": target.name, "$options": "i"}}
+            ]
+        }).sort("created_at", -1).limit(10)
+        
+        reports = await cursor.to_list(length=10)
 
         # Format associated reports
         associated = []
         for rep in reports:
-            fac_name = rep.facility.name if rep.facility else rep.facility_id
+            meta = rep.get("metadata", {})
+            analysis = rep.get("analysis", {})
+            risk = rep.get("risk", {})
+            review = rep.get("review", {})
+            
+            created_at = rep.get("created_at") or datetime.now(timezone.utc)
+            if isinstance(created_at, str):
+                try:
+                    created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                except ValueError:
+                    created_at = datetime.now(timezone.utc)
+                    
+            updated_at = rep.get("updated_at") or datetime.now(timezone.utc)
+            if isinstance(updated_at, str):
+                try:
+                    updated_at = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+                except ValueError:
+                    updated_at = datetime.now(timezone.utc)
+
             associated.append(
                 ReportRead(
-                    id=rep.id,
-                    report_id=rep.report_id,
-                    reporter_id=rep.reporter_id,
-                    facility_id=rep.facility_id,
-                    facility_name=fac_name,
-                    region=rep.facility.region if rep.facility else "Upper Assam",
-                    location=rep.location,
-                    raw_report_text=rep.raw_report_text,
-                    language=rep.language,
-                    report_type=rep.report_type,
-                    activity=rep.activity,
-                    primary_hazard=rep.ai_primary_hazard,
-                    precursor_category=rep.ai_precursor_category,
-                    potential_consequence=rep.potential_consequence,
-                    ai_sif_potential=rep.ai_sif_potential,
-                    ai_sif_precursor=rep.ai_sif_precursor,
-                    ai_confidence=rep.ai_confidence,
-                    ai_urgency_score=rep.ai_urgency_score,
-                    ai_life_saving_rule=rep.ai_life_saving_rule,
-                    ai_failed_barrier=rep.ai_failed_barrier,
-                    ai_barrier_status=rep.ai_barrier_status,
-                    ai_evidence_phrase=rep.ai_evidence_phrase,
-                    ai_explanation=rep.ai_explanation,
-                    review_status=rep.review_status,
-                    reviewer_id=rep.reviewer_id,
-                    reviewer_notes=rep.reviewer_notes,
-                    reviewed_at=rep.reviewed_at,
-                    final_sif_potential=rep.final_sif_potential,
-                    final_sif_precursor=rep.final_sif_precursor,
-                    final_life_saving_rule=rep.final_life_saving_rule,
-                    final_failed_barrier=rep.final_failed_barrier,
-                    final_barrier_status=rep.final_barrier_status,
-                    sif_potential=rep.effective_sif_potential,
-                    sif_precursor=rep.effective_sif_precursor,
-                    confidence=rep.ai_confidence,
-                    urgency_score=rep.ai_urgency_score,
-                    life_saving_rule=rep.effective_life_saving_rule,
-                    failed_barrier=rep.effective_failed_barrier,
-                    barrier_status=rep.effective_barrier_status,
-                    evidence_phrase=rep.ai_evidence_phrase,
+                    id=str(rep.get("_id", "")),
+                    report_id=rep.get("report_id", ""),
+                    reporter_id=meta.get("reporter_id", ""),
+                    facility_id=meta.get("facility_id", ""),
+                    facility_name=meta.get("facility_name", ""),
+                    region=meta.get("region", "Upper Assam"),
+                    location=meta.get("location", ""),
+                    raw_report_text=rep.get("raw_report_text", ""),
+                    language=analysis.get("language", "English"),
+                    report_type=meta.get("report_type", ""),
+                    activity=analysis.get("activity", ""),
+                    primary_hazard=analysis.get("hazard", ""),
+                    precursor_category=analysis.get("precursor_category", ""),
+                    potential_consequence=meta.get("potential_consequence", ""),
+                    ai_sif_potential=analysis.get("sif_potential", ""),
+                    ai_sif_precursor=analysis.get("sif_precursor", ""),
+                    ai_confidence=analysis.get("confidence", 0.0),
+                    ai_urgency_score=risk.get("urgency_score", 0),
+                    ai_life_saving_rule=analysis.get("life_saving_rule", ""),
+                    ai_failed_barrier=analysis.get("failed_barrier", ""),
+                    ai_barrier_status=analysis.get("barrier_status", ""),
+                    ai_evidence_phrase=analysis.get("evidence_phrase", ""),
+                    ai_explanation=analysis.get("explanation", ""),
+                    review_status=review.get("status", "PENDING"),
+                    reviewer_id=review.get("reviewer_id", ""),
+                    reviewer_notes=review.get("reviewer_notes", ""),
+                    reviewed_at=review.get("reviewed_at", None),
+                    final_sif_potential=review.get("final_sif_potential", None),
+                    final_sif_precursor=review.get("final_sif_precursor", None),
+                    final_life_saving_rule=review.get("final_life_saving_rule", None),
+                    final_failed_barrier=review.get("final_failed_barrier", None),
+                    final_barrier_status=review.get("final_barrier_status", None),
+                    sif_potential=review.get("final_sif_potential") or analysis.get("sif_potential", ""),
+                    sif_precursor=review.get("final_sif_precursor") or analysis.get("sif_precursor", ""),
+                    confidence=analysis.get("confidence", 0.0),
+                    urgency_score=risk.get("urgency_score", 0),
+                    life_saving_rule=review.get("final_life_saving_rule") or analysis.get("life_saving_rule", ""),
+                    failed_barrier=review.get("final_failed_barrier") or analysis.get("failed_barrier", ""),
+                    barrier_status=review.get("final_barrier_status") or analysis.get("barrier_status", ""),
+                    evidence_phrase=analysis.get("evidence_phrase", ""),
                     evidence_phrases=[],
-                    created_at=rep.created_at,
-                    updated_at=rep.updated_at,
+                    created_at=created_at,
+                    updated_at=updated_at,
                 )
             )
 
