@@ -1,10 +1,12 @@
 """Main FastAPI Application Entrypoint for SIFT."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 
 from app.core.config import settings
@@ -12,6 +14,7 @@ from app.core.logging import setup_logging, logger
 from app.core.errors import SIFTException
 from app.db.base import Base
 from app.db.session import engine
+from app.db.mongodb import connect_mongodb, close_mongodb
 import app.db.models  # Register all models
 from app.api.v1.router import api_router
 from app.api.v1.endpoints import health
@@ -22,6 +25,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application startup and shutdown event management."""
     setup_logging()
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION} [{settings.APP_ENV}]")
+    connect_mongodb()
 
     # If using local SQLite, automatically create all tables on startup
     if "sqlite" in settings.DATABASE_URL:
@@ -33,6 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     logger.info("Shutting down SIFT Backend.")
     await engine.dispose()
+    close_mongodb()
 
 
 def create_application() -> FastAPI:
@@ -45,9 +50,11 @@ def create_application() -> FastAPI:
             "map IOGP Life-Saving Rules, diagnose failed safety barriers, and prioritize CAPA actions."
         ),
         version=settings.APP_VERSION,
-        docs_url="/docs" if settings.DEBUG else None,
-        redoc_url="/redoc" if settings.DEBUG else None,
-        openapi_url="/openapi.json" if settings.DEBUG else None,
+        # This is a hackathon MVP: judges and frontend teammates need the
+        # live contract even when a host exports DEBUG=release.
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_url="/openapi.json",
         lifespan=lifespan,
     )
 
@@ -97,6 +104,15 @@ def create_application() -> FastAPI:
     # 3. Mount Routers
     application.include_router(health.router)
     application.include_router(api_router, prefix=settings.API_V1_STR)
+
+    # Production/judge demo: one FastAPI process serves both the React SPA and
+    # its API. Mount this last so /api/v1, /docs and /health keep precedence.
+    frontend_dist = Path(__file__).resolve().parents[2] / "dist"
+    if frontend_dist.is_dir():
+        application.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
+        logger.info("Serving built React frontend from %s", frontend_dist)
+    else:
+        logger.warning("React build directory not found at %s; run npm run build from the repository root.", frontend_dist)
 
     return application
 

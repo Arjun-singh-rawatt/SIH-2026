@@ -2,6 +2,8 @@
 
 from typing import Optional, List, Tuple
 from datetime import datetime, timezone
+import json
+from pathlib import Path
 from app.db.repositories.report_repo import ReportRepository
 from app.db.repositories.facility_repo import FacilityRepository
 from app.db.models.safety_report import SafetyReport
@@ -19,6 +21,7 @@ from app.utils.filters import ReportFilterParams
 from app.utils.pagination import PageParams, PaginatedResponse
 from app.utils.enums import ReviewStatus, SIFPotential, BarrierStatus
 from app.core.errors import ReportNotFoundException, FacilityNotFoundException
+from app.core.config import settings
 
 
 class ReportService:
@@ -35,6 +38,28 @@ class ReportService:
         self.analysis_service = analysis_service
         self.vector_store = vector_store
         self.embedding_provider = embedding_provider
+
+    def _append_report_log(self, report: SafetyReport) -> None:
+        """Keep a local plain-text demo record of worker submissions."""
+        try:
+            log_path = Path(settings.REPORT_LOG_FILE).expanduser()
+            if not log_path.is_absolute():
+                log_path = Path.cwd() / log_path
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            record = {
+                "report_id": report.report_id,
+                "reporter_id": report.reporter_id,
+                "facility_id": report.facility_id,
+                "location": report.location,
+                "report_type": report.report_type,
+                "activity": report.activity,
+                "description": report.raw_report_text,
+                "created_at": report.created_at.isoformat(),
+            }
+            with log_path.open("a", encoding="utf-8") as log_file:
+                log_file.write(json.dumps(record, ensure_ascii=True) + "\n")
+        except OSError:
+            pass
 
     def _to_read_schema(self, r: SafetyReport) -> ReportRead:
         fac_name = r.facility.name if r.facility else r.facility_id
@@ -246,6 +271,8 @@ class ReportService:
             )
             self.repo.db.add(barrier)
             await self.repo.db.commit()
+
+        self._append_report_log(created_report)
 
         # 5. Embed into Vector store
         try:

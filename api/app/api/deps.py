@@ -14,6 +14,8 @@ from app.ai import get_ai_provider, AIProvider
 from app.vector import get_vector_store, get_embedding_provider, VectorStore, EmbeddingProvider
 from app.services.analysis_service import AnalysisService
 from app.services.report_service import ReportService
+from app.services.mongo_report_service import MongoReportService
+from app.core.config import settings
 from app.services.review_service import ReviewService
 from app.services.dashboard_service import DashboardService
 from app.services.facility_service import FacilityService
@@ -55,6 +57,8 @@ def get_report_service(
     facility_repo: Annotated[FacilityRepository, Depends(get_facility_repo)],
     analysis_service: Annotated[AnalysisService, Depends(get_analysis_service)],
 ) -> ReportService:
+    if settings.REPORT_STORAGE.lower() == "mongodb":
+        return MongoReportService(analysis_service)  # type: ignore[return-value]
     return ReportService(
         report_repo=report_repo,
         facility_repo=facility_repo,

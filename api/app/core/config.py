@@ -1,6 +1,7 @@
 """Application Configuration via Pydantic Settings."""
 
 import os
+from pathlib import Path
 from typing import List, Union
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -44,9 +45,24 @@ class Settings(BaseSettings):
             return v
         return ["*"]
 
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def normalize_debug(cls, value):
+        """Tolerate common deployment values such as DEBUG=release."""
+        if isinstance(value, str) and value.strip().lower() in {"release", "production", "prod"}:
+            return False
+        return value
+
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./sift.db"
     DB_ECHO: bool = False
+
+    # Report persistence. Keep SQLite as the safe local default; set this to
+    # "mongodb" for the judge/demo flow after supplying MONGODB_URI.
+    REPORT_STORAGE: str = "sqlite"
+    MONGODB_URI: str = ""
+    MONGODB_DATABASE: str = "sift"
+    REPORT_LOG_FILE: str = str(Path(__file__).resolve().parents[4] / "report.txt")
 
     # Security
     SECRET_KEY: str = "sift-super-secret-key-change-in-production-2026-oil-india"

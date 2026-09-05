@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Camera,
   CheckCircle2,
@@ -23,6 +24,7 @@ const initialLocation = {
 export function ReportSafetyConcern() {
   const { currentUser } = useAuth();
   const { addReport } = useReportsContext();
+  const navigate = useNavigate();
   const photoInputRef = useRef(null);
   const recorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
@@ -96,6 +98,7 @@ export function ReportSafetyConcern() {
       });
       setSubmitState({ type: 'success', reportId: created.reportId });
       setDescription('');
+      window.setTimeout(() => navigate(`/reports/${created.reportId}`), 650);
     } catch (error) {
       console.error('Unable to submit report:', error);
       setSubmitState({ type: 'error' });
@@ -157,7 +160,7 @@ export function ReportSafetyConcern() {
               <button type="submit" disabled={isSubmitting || !description.trim()} className="flex w-full items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-[#00745d] to-[#00634f] py-3 text-sm font-extrabold tracking-[0.04em] text-white shadow-btn-emerald transition hover:from-[#058867] disabled:cursor-not-allowed disabled:opacity-50">
                 <Send className="h-5 w-5" /> {isSubmitting ? 'SUBMITTING...' : 'SUBMIT REPORT'}
               </button>
-              {submitState?.type === 'success' && <p className="mt-2 flex items-center justify-center gap-2 text-xs font-semibold text-[#00705a]"><CheckCircle2 className="h-4 w-4" /> Report submitted. Tracking ID: {submitState.reportId}</p>}
+              {submitState?.type === 'success' && <p className="mt-2 flex items-center justify-center gap-2 text-xs font-semibold text-[#00705a]"><CheckCircle2 className="h-4 w-4" /> Report saved. Opening its SIF assessment — Tracking ID: {submitState.reportId}</p>}
               {submitState?.type === 'error' && <p className="mt-2 text-center text-xs font-semibold text-red-700">We could not submit the report. Please try again.</p>}
             </div>
           </form>

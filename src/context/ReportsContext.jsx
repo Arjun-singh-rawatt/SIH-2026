@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { reportService } from '../services/reportService';
 import { actionService } from '../services/actionService';
 import { analyticsService } from '../services/analyticsService';
-import { demoReports } from '../data/demoReports';
 
 const ReportsContext = createContext(null);
 
@@ -21,12 +20,9 @@ export function ReportsProvider({ children }) {
         reportService.getReports({}, 1, 100),
         actionService.getActions({}, 1, 100),
       ]);
-      const fetchedReportIds = new Set(fetchedReports.map((report) => report.reportId));
-      const reportsWithDemoData = [
-        ...demoReports.filter((report) => !fetchedReportIds.has(report.reportId)),
-        ...fetchedReports,
-      ];
-      setReports(reportsWithDemoData);
+      // This is deliberately the API response only: worker and HSE screens
+      // must never disagree because one of them is showing browser mock data.
+      setReports(fetchedReports);
       setActions(fetchedActions);
       analyticsService.invalidateCache();
     } catch (err) {
